@@ -709,7 +709,6 @@ def build_bilingual_karaoke_ass_text(
     duration_sec: float,
     keywords: List[str] | None = None,
     phrase_note: str = "",
-    phrases: List[Dict] | None = None,
     max_units_en: float = 28.0,
     max_units_zh: float = 24.0,
 ) -> tuple[str, str]:
@@ -732,24 +731,8 @@ def build_bilingual_karaoke_ass_text(
         zh_wrapped = wrap_text_by_visual_width(zh_text, max_units_zh)
         zh_line = ass_escape_text(zh_wrapped).replace(r"\\N", r"\N")
         
-        # 添加短语学习内容（单词学习模式）
-        if phrases and len(phrases) > 0:
-            learning_lines = []
-            for phrase_info in phrases:
-                phrase = phrase_info.get("phrase", "")
-                meaning = phrase_info.get("meaning", "")
-                if phrase and meaning:
-                    # 短语学习格式：phrase = meaning
-                    learning_text = f"{phrase} = {meaning}"
-                    learning_wrapped = wrap_text_by_visual_width(learning_text, 32.0)
-                    learning_escaped = ass_escape_text(learning_wrapped).replace(r"\\N", r"\N")
-                    learning_lines.append(f"{{\\fs20\\c&H00BBDD99&}}{learning_escaped}")
-            
-            if learning_lines:
-                zh_line = f"{zh_line}\\N" + "\\N".join(learning_lines)
-        
         # 添加普通学习笔记（如果有的话）
-        elif phrase_note:
+        if phrase_note:
             note_wrapped = wrap_text_by_visual_width(phrase_note, 22.0)
             note_escaped = ass_escape_text(note_wrapped).replace(r"\\N", r"\N")
             zh_line = f"{zh_line}\\N{{\\fs22\\alpha&H40&}}{note_escaped}"
@@ -838,170 +821,6 @@ def translate_with_libretranslate(
     raise RuntimeError("翻译失败")
 
 
-def get_phrase_definitions() -> Dict[str, str]:
-    """
-    返回常见英文短语和词组的中文释义字典
-    按重要性和使用频率精心筛选
-    """
-    return {
-        # 动词短语
-        "give up": "放弃",
-        "look up": "查找；向上看",
-        "pick up": "拾起；接送；学会",
-        "put on": "穿上；上演",
-        "take off": "起飞；脱下；成功",
-        "turn on": "打开；启动",
-        "turn off": "关闭",
-        "show up": "出现；到达",
-        "come back": "回来",
-        "go ahead": "继续；先走",
-        "set up": "建立；设置",
-        "break down": "故障；分解",
-        "work out": "解决；锻炼",
-        "figure out": "弄清楚",
-        "find out": "发现；查明",
-        "carry out": "执行；实施",
-        "make up": "组成；编造；化妆",
-        "bring up": "提出；抚养",
-        "get along": "相处；进展",
-        "get over": "克服；恢复",
-        
-        # 介词短语  
-        "in order to": "为了",
-        "according to": "根据",
-        "due to": "由于",
-        "thanks to": "多亏了",
-        "instead of": "代替",
-        "because of": "因为",
-        "in spite of": "尽管",
-        "in addition to": "除...之外",
-        "as well as": "以及",
-        "rather than": "而不是",
-        
-        # 时间相关
-        "right now": "现在",
-        "at once": "立刻",
-        "in time": "及时",
-        "on time": "准时",
-        "all the time": "一直",
-        "from time to time": "时不时",
-        "for the time being": "暂时",
-        "sooner or later": "迟早",
-        
-        # 商务用语
-        "deal with": "处理；对付",
-        "focus on": "专注于",
-        "depend on": "取决于；依靠",
-        "based on": "基于",
-        "relate to": "与...相关",
-        "refer to": "指的是；参考",
-        "apply for": "申请",
-        "look for": "寻找",
-        "wait for": "等待",
-        "pay for": "为...付款",
-        
-        # 科技相关
-        "artificial intelligence": "人工智能",
-        "machine learning": "机器学习",
-        "big data": "大数据",
-        "cloud computing": "云计算",
-        "social media": "社交媒体",
-        "virtual reality": "虚拟现实",
-        "block chain": "区块链",
-        "data science": "数据科学",
-        
-        # 日常表达
-        "no problem": "没问题",
-        "of course": "当然",
-        "by the way": "顺便说一下",
-        "as a matter of fact": "事实上",
-        "to tell the truth": "说实话",
-        "in my opinion": "在我看来",
-        "as far as I know": "据我所知",
-        "more or less": "差不多",
-        
-        # 学术用语
-        "in other words": "换句话说",
-        "for example": "例如",
-        "such as": "比如",
-        "and so on": "等等",
-        "in general": "总的来说",
-        "in particular": "特别是",
-        "as a result": "因此",
-        "on the other hand": "另一方面",
-        
-        # 情感表达
-        "be proud of": "为...骄傲",
-        "be interested in": "对...感兴趣",
-        "be worried about": "为...担心",
-        "be excited about": "对...兴奋",
-        "be satisfied with": "对...满意",
-        "be familiar with": "熟悉",
-        
-        # 单个重要词汇
-        "definitely": "绝对地",
-        "absolutely": "完全地",
-        "obviously": "显然",
-        "basically": "基本上",
-        "actually": "实际上",
-        "eventually": "最终",
-        "immediately": "立刻",
-        "unfortunately": "不幸的是",
-        "apparently": "显然",
-        "particularly": "特别地"
-    }
-
-
-def extract_key_phrases(text: str, learning_mode: bool = False) -> List[Dict[str, str]]:
-    """
-    从文本中提取关键短语及其释义
-    返回 [{"phrase": "短语", "meaning": "释义"}] 的列表
-    """
-    if not learning_mode:
-        return []
-    
-    phrase_dict = get_phrase_definitions()
-    found_phrases = []
-    
-    # 将文本转为小写进行匹配
-    text_lower = text.lower()
-    
-    # 按长度排序，优先匹配更长的短语
-    sorted_phrases = sorted(phrase_dict.items(), key=lambda x: len(x[0]), reverse=True)
-    
-    # 跟踪已匹配的位置，避免重复匹配
-    matched_positions = set()
-    
-    for phrase, meaning in sorted_phrases:
-        # 查找短语在文本中的位置
-        start = 0
-        while True:
-            pos = text_lower.find(phrase.lower(), start)
-            if pos == -1:
-                break
-            
-            # 检查是否与已匹配的区域重叠
-            phrase_len = len(phrase)
-            phrase_range = set(range(pos, pos + phrase_len))
-            
-            if not phrase_range.intersection(matched_positions):
-                # 验证是否为完整词汇（避免部分匹配）
-                before_char = text_lower[pos-1] if pos > 0 else ' '
-                after_char = text_lower[pos+phrase_len] if pos+phrase_len < len(text_lower) else ' '
-                
-                if (not before_char.isalnum()) and (not after_char.isalnum()):
-                    found_phrases.append({
-                        "phrase": phrase,
-                        "meaning": meaning,
-                        "position": pos
-                    })
-                    matched_positions.update(phrase_range)
-            
-            start = pos + 1
-    
-    # 按在文本中出现的位置排序，限制数量避免过载
-    found_phrases.sort(key=lambda x: x["position"])
-    return found_phrases[:3]  # 最多返回3个短语释义
 
 
 def extract_learning_note(en_text: str, zh_text: str) -> str:
@@ -1019,7 +838,6 @@ def build_bilingual_items_with_libretranslate(
     endpoint: str = DEFAULT_LIBRETRANSLATE_ENDPOINT,
     api_key: str | None = DEFAULT_LIBRETRANSLATE_API_KEY,
     sleep_sec: float = 0.02,
-    learning_mode: bool = False,
 ) -> List[Dict]:
     bilingual_items: List[Dict] = []
     cache = load_translation_cache()
@@ -1050,15 +868,11 @@ def build_bilingual_items_with_libretranslate(
             if sleep_sec > 0:
                 time.sleep(sleep_sec)
 
-        # 提取短语学习内容
-        learning_phrases = extract_key_phrases(en_text, learning_mode)
-        
         bilingual_items.append(
             {
                 "en": en_text,
                 "zh": zh_text,
                 "note": extract_learning_note(en_text, zh_text),
-                "phrases": learning_phrases,  # 新增：短语学习内容
                 "start": item["start"],
                 "duration": item["duration"],
                 "end": item["end"],
@@ -1473,7 +1287,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 item["duration"],
                 keywords=keywords,
                 phrase_note=item.get("note", ""),
-                phrases=item.get("phrases", []),  # 新增：短语学习内容
                 max_units_en=36.0,  # 允许更长的英文字幕
                 max_units_zh=28.0,  # 允许更长的中文字幕
             )
@@ -2013,13 +1826,13 @@ def main() -> None:
   python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM"
 
   # 友好的命名参数方式（推荐）
-  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --learning-mode
+  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro
 
   # 自定义封面和摘要
   python build_from_video_id.py QqeECC13HcM --query "tech background" --cover my_cover.jpg --summary "深度学习教程"
   
   # 启用所有功能
-  python build_from_video_id.py QqeECC13HcM --show-bars --show-intro --learning-mode --show-outro
+  python build_from_video_id.py QqeECC13HcM --show-bars --show-intro --show-outro
   
   # 自定义输出路径
   python build_from_video_id.py QqeECC13HcM --output /path/to/output/video.mp4
@@ -2029,7 +1842,7 @@ def main() -> None:
   python build_from_video_id.py QqeECC13HcM --keep-temp --summary "学习材料"
   
   # 完整功能示例（自定义路径+保留文件）
-  python build_from_video_id.py QqeECC13HcM --output ./videos/ai_tutorial.mp4 --keep-temp --show-intro --learning-mode
+  python build_from_video_id.py QqeECC13HcM --output ./videos/ai_tutorial.mp4 --keep-temp --show-intro
 
 注意: 同时支持新的命名参数方式和旧的位置参数方式（向后兼容）
 默认会自动清理中间文件(.mp3, .txt, .ass等)，只保留最终的.mp4视频文件
@@ -2066,9 +1879,6 @@ def main() -> None:
                        action='store_true',
                        help='显示1.5秒片头效果 (默认: false)')
     
-    parser.add_argument('--learning-mode', '-l',
-                       action='store_true',
-                       help='启用单词学习模式，显示关键短语释义 (默认: false)')
     
     parser.add_argument('--no-outro',
                        action='store_true',
@@ -2102,7 +1912,7 @@ def main() -> None:
         if looks_like_old_format:
             print("🔄 检测到旧的位置参数格式，自动兼容处理...")
             print("💡 建议使用新的命名参数方式，更清晰易懂！")
-            print("   示例: python build_from_video_id.py VIDEO_ID --show-intro --learning-mode")
+            print("   示例: python build_from_video_id.py VIDEO_ID --show-intro")
             print()
         
         # 兼容旧格式的参数解析将在下面处理
@@ -2139,7 +1949,6 @@ def main() -> None:
             show_bars = parse_bool_arg(sys.argv[4]) if len(sys.argv) >= 5 else DEFAULT_SHOW_BARS
             custom_summary = sys.argv[5].strip() if len(sys.argv) >= 6 else ""
             show_intro = parse_bool_arg(sys.argv[6]) if len(sys.argv) >= 7 else False
-            learning_mode = parse_bool_arg(sys.argv[7]) if len(sys.argv) >= 8 else False
             show_outro = parse_bool_arg(sys.argv[8]) if len(sys.argv) >= 9 else True
             output_path = ''  # 旧格式不支持自定义输出路径
             keep_temp = False  # 旧格式默认清理中间文件
@@ -2164,7 +1973,6 @@ def main() -> None:
             fallback_cover = args.cover
             custom_summary = args.summary
             show_intro = args.show_intro
-            learning_mode = args.learning_mode
             show_outro = not args.no_outro  # 默认true，除非显式关闭
             output_path = args.output.strip() if args.output else ''
             keep_temp = args.keep_temp
@@ -2197,7 +2005,6 @@ def main() -> None:
         fallback_cover = args.cover
         custom_summary = args.summary
         show_intro = args.show_intro
-        learning_mode = args.learning_mode
         show_outro = not args.no_outro
         output_path = args.output.strip() if args.output else ''
         keep_temp = args.keep_temp
@@ -2260,9 +2067,7 @@ def main() -> None:
 
     print("2/8 翻译中文字幕...")
     start_step("翻译中文字幕")
-    if learning_mode:
-        print("   启用单词学习模式，提取关键短语...")
-    bilingual_items = build_bilingual_items_with_libretranslate(items, learning_mode=learning_mode)
+    bilingual_items = build_bilingual_items_with_libretranslate(items)
     end_step("翻译中文字幕")
 
     print("3/8 生成字幕和文本...")

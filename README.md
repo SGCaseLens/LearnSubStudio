@@ -18,7 +18,6 @@
 - 📄 **可选摘要**: 支持自定义摘要，默认无摘要，简洁高效
 - 🎬 **可选片头**: 1.5秒精美片头，默认不显示，用户可选启用
 - 🎭 **优雅片尾**: 2秒专业收尾，字幕结束后保留背景和标题，柱状图慢慢淡出
-- 📚 **单词学习模式**: 智能识别关键短语，提供中文释义（可选，默认关闭）
 - 🖼️ **动态封面**: 支持 Unsplash 自动获取或使用自定义封面
 - 📱 **移动优化**: 针对手机竖屏（1080x1920）优化的布局
 - 🚀 **性能优化**: 智能检测硬件编解码器，多线程加速，保持质量的同时大幅提升导出速度
@@ -91,7 +90,7 @@ source ~/ytapi-venv/bin/activate
 python build_from_video_id.py QqeECC13HcM
 
 # 3. 使用完整功能
-python build_from_video_id.py QqeECC13HcM --show-intro --learning-mode --output ./videos/
+python build_from_video_id.py QqeECC13HcM --show-intro --output ./videos/
 ```
 
 ### 完整部署流程（新环境）
@@ -225,7 +224,7 @@ source ~/ytapi-venv/bin/activate
 python build_from_video_id.py QqeECC13HcM
 
 # 5. 使用完整功能
-python build_from_video_id.py QqeECC13HcM --show-intro --learning-mode --output ./videos/
+python build_from_video_id.py QqeECC13HcM --show-intro --output ./videos/
 
 # 6. 退出虚拟环境 (可选)
 deactivate
@@ -244,10 +243,10 @@ deactivate
 ./run_example.sh
 
 # 使用自定义参数
-./run_example.sh QqeECC13HcM --show-intro --learning-mode
+./run_example.sh QqeECC13HcM --show-intro
 
 # 完整功能演示
-./run_example.sh QqeECC13HcM --output ./videos/ --show-intro --learning-mode --summary "AI学习视频"
+./run_example.sh QqeECC13HcM --output ./videos/ --show-intro --summary "AI学习视频"
 ```
 
 **自定义启动脚本：**
@@ -265,7 +264,7 @@ EOF
 chmod +x my_run.sh
 
 # 使用
-./my_run.sh QqeECC13HcM --show-intro --learning-mode
+./my_run.sh QqeECC13HcM --show-intro
 ```
 
 ### 虚拟机环境验证
@@ -320,7 +319,6 @@ python build_from_video_id.py VIDEO_ID_OR_URL [选项]
 - `--show-bars, -b`: 显示音频频谱图
 - `--no-bars`: 强制关闭频谱图
 - `--show-intro, -i`: 显示1.5秒片头效果
-- `--learning-mode, -l`: 启用单词学习模式  
 - `--show-outro, -o`: 显示2秒优雅片尾（默认开启）
 - `--no-outro`: 关闭片尾效果
 - `--output, --out`: 指定输出MP4文件路径（默认：当前目录）
@@ -353,8 +351,8 @@ python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM"
 # 自定义封面和摘要
 python build_from_video_id.py QqeECC13HcM --query "tech background" --cover my_cover.jpg --summary "深度学习教程"
 
-# 启用学习功能
-python build_from_video_id.py QqeECC13HcM --show-intro --learning-mode --summary "学习AI技术"
+# 启用片头和摘要
+python build_from_video_id.py QqeECC13HcM --show-intro --summary "学习AI技术"
 
 # 控制音频可视化
 python build_from_video_id.py QqeECC13HcM --show-bars      # 强制显示频谱
@@ -377,7 +375,6 @@ python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM" \
   --summary "学习AI技术：从基础到实践" \
   --show-bars \
   --show-intro \
-  --learning-mode \
   --show-outro
 ```
 
@@ -391,7 +388,7 @@ python build_from_video_id.py QqeECC13HcM "tech" cover.jpg true "学习AI技术"
 
 **✅ 新方式（清晰明了）：**
 ```bash
-python build_from_video_id.py QqeECC13HcM --query tech --cover cover.jpg --show-bars --summary "学习AI技术" --show-intro --learning-mode --show-outro
+python build_from_video_id.py QqeECC13HcM --query tech --cover cover.jpg --show-bars --summary "学习AI技术" --show-intro --show-outro
 # 每个参数都有明确含义！
 ```
 
@@ -639,20 +636,6 @@ libretranslate --host 0.0.0.0 --port 5000
 - **智能适配**: 根据字幕长度自动调整显示数量
 - **上下文丰富**: 提供充足的语境信息
 
-### 单词学习模式（可选功能，默认关闭）
-- **📝 智能短语识别**: 自动识别200+常用短语和词组
-- **🎯 精准释义显示**: 在中文字幕下方显示短语释义
-- **🔍 分类词库**: 动词短语、介词短语、时间表达、商务用语等
-- **💡 学习优化**: 每句最多显示3个短语，避免信息过载
-- **🎨 视觉区分**: 浅绿色显示，与普通字幕区分开
-
-**单词学习示例效果:**
-```
-英文: "Never gonna give you up, I will figure it out"
-中文: "永远不会放弃你，我会想办法的"
-学习: give up = 放弃
-      figure out = 弄清楚
-```
 
 ### 智能音频可视化
 - **🎵 内容类型检测**: 基于字幕内容智能识别音频类型
