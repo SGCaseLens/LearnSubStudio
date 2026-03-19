@@ -46,9 +46,9 @@ SAFE_AREA_SIDE = 60      # 左右安全距离：避开边缘裁切
 TITLE_SAFE_Y = SAFE_AREA_TOP + 40        # 标题安全位置：200px
 SUMMARY_SAFE_Y = SAFE_AREA_TOP + 120     # 摘要安全位置：280px  
 HISTORY_SAFE_TOP = SAFE_AREA_TOP + 200   # 历史区域顶部：360px
-HISTORY_SAFE_BOTTOM = VIDEO_H - SAFE_AREA_BOTTOM - 300  # 历史区域底部：1340px
+HISTORY_SAFE_BOTTOM = VIDEO_H - SAFE_AREA_BOTTOM - 380  # 历史区域底部：1260px
+SPECTRUM_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 320     # 频谱安全位置：1320px
 SUBTITLE_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 120     # 字幕安全位置：1520px
-SPECTRUM_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 200     # 频谱安全位置：1440px
 
 DEFAULT_LIBRETRANSLATE_ENDPOINT = os.environ.get(
     "LIBRETRANSLATE_ENDPOINT",
@@ -924,7 +924,7 @@ def print_safe_area_layout():
     print(f"├─ 标题区域 ({TITLE_SAFE_Y}px)        │")
     print(f"├─ 摘要区域 ({SUMMARY_SAFE_Y}px)        │")
     print(f"├─ 历史字幕 ({HISTORY_SAFE_TOP}-{HISTORY_SAFE_BOTTOM}px) │")
-    print(f"├─ 频谱图   ({SPECTRUM_SAFE_Y}px)       │")
+    print(f"├─ 频谱图   ({SPECTRUM_SAFE_Y}px)       │ ← 位于历史字幕和主字幕之间")
     print(f"├─ 主字幕   ({SUBTITLE_SAFE_Y}px)       │")
     print(f"│ 底部安全区 ({SAFE_AREA_BOTTOM}px)       │ ← 避开操作按钮/评论")
     print("└" + "─" * 50 + "┘")
@@ -1592,7 +1592,7 @@ def build_video(
         filter_complex += (
 
             "[bg][bars]"
-            f"overlay=(W-w)/2:H-h-{overlay_y}[tmp1];"
+            f"overlay=(W-w)/2:{overlay_y}[tmp1];"
 
             f"[tmp1]drawtext="
             f"fontfile='{safe_fontfile}':"

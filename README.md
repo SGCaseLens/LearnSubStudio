@@ -680,7 +680,7 @@ SAFE_AREA_SIDE = 60      # 左右安全距离
 # 核心内容定位
 TITLE_SAFE_Y = 200       # 标题: 顶部200px
 SUBTITLE_SAFE_Y = 1520   # 字幕: 底部留400px
-SPECTRUM_SAFE_Y = 1440   # 频谱: 底部留480px
+SPECTRUM_SAFE_Y = 1320   # 频谱: 底部留600px
 ```
 
 #### 🎮 平台适配优势
