@@ -1164,14 +1164,14 @@ def write_ass_karaoke(
     subtitle_end_time: float = None,  # 字幕结束时间，用于片尾效果
 ) -> None:
     # 字幕层级设计：英文突出，中文辅助（短视频安全区）
-    english_fontsize = 48      # 英文字体更大，更突出（增加到48px）
+    english_fontsize = 44      # 英文字体大小，避免超出边界（减小到44px）
     chinese_fontsize = 38      # 中文字体适中，清晰可读（调整到38px）
     
     # 计算短视频安全区字幕边距 - 英文在上，中文在下
     # ASS中MarginV是从底部开始计算：值越大越靠近顶部，值越小越靠近底部
-    english_margin_v = SAFE_AREA_BOTTOM + 80   # 英文字幕在上方：360px距底
+    english_margin_v = SAFE_AREA_BOTTOM + 180  # 英文字幕在上方：460px距底，为多行预留空间
     chinese_margin_v = SAFE_AREA_BOTTOM + 20   # 中文字幕在下方：300px距底
-    subtitle_line_gap = 60  # 英中文字幕间距：60px
+    subtitle_line_gap = 150  # 英中文字幕间距：150px，确保3行英文也不覆盖中文
 
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -1287,8 +1287,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 item["duration"],
                 keywords=keywords,
                 phrase_note=item.get("note", ""),
-                max_units_en=36.0,  # 允许更长的英文字幕
-                max_units_zh=28.0,  # 允许更长的中文字幕
+                max_units_en=40.0,  # 44px字体下允许更多文字，减少换行概率
+                max_units_zh=32.0,  # 相应增加中文字幕长度
             )
             
             # 英文字幕：Layer 3, EnglishMain样式，更突出，主要位置
@@ -2120,7 +2120,17 @@ def main() -> None:
     auto_show_bars = auto_detect_show_bars(content_type)
     
     # 用户可以通过参数覆盖自动检测结果
+    user_specified_bars = False
+    
+    # 检查旧的位置参数格式
     if len(sys.argv) >= 5 and sys.argv[4].strip().lower() in ['true', 'false']:
+        user_specified_bars = True
+    
+    # 检查新的命名参数格式
+    if '--show-bars' in sys.argv or '--no-bars' in sys.argv or '-b' in sys.argv:
+        user_specified_bars = True
+    
+    if user_specified_bars:
         # 用户明确指定了show_bars参数
         show_bars_final = show_bars
         print(f"   柱状图显示: {show_bars_final} (用户指定)")
