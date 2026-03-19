@@ -32,9 +32,253 @@
 - FFmpeg
 - yt-dlp
 
-### Python 依赖
+## 🚀 安装和运行
+
+### 方法1: 使用虚拟环境（推荐）
+
+**创建和激活虚拟环境：**
+```bash
+# 创建虚拟环境
+python3 -m venv ytapi-venv
+
+# 激活虚拟环境
+# Linux/macOS:
+source ytapi-venv/bin/activate
+
+# Windows:
+ytapi-venv\Scripts\activate
+```
+
+**安装Python依赖：**
 ```bash
 pip install requests youtube-transcript-api
+```
+
+**运行项目：**
+```bash
+# 确保虚拟环境已激活
+source ~/ytapi-venv/bin/activate  # Linux/macOS
+# 或
+ytapi-venv\Scripts\activate       # Windows
+
+# 运行脚本
+python build_from_video_id.py QqeECC13HcM
+```
+
+### 方法2: 直接安装（简单）
+
+**安装Python依赖：**
+```bash
+pip install requests youtube-transcript-api
+```
+
+**运行项目：**
+```bash
+python build_from_video_id.py QqeECC13HcM
+```
+
+## ⚡ 快速开始
+
+### 在虚拟机/服务器环境中运行
+
+如果您已经设置好了虚拟环境，可以按以下步骤运行：
+
+```bash
+# 1. 激活预设的虚拟环境
+source ~/ytapi-venv/bin/activate
+
+# 2. 运行项目
+python build_from_video_id.py QqeECC13HcM
+
+# 3. 使用完整功能
+python build_from_video_id.py QqeECC13HcM --show-intro --learning-mode --output ./videos/
+```
+
+### 完整部署流程（新环境）
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/your-repo/LearnSubStudio.git
+cd LearnSubStudio
+
+# 2. 创建虚拟环境
+python3 -m venv ytapi-venv
+
+# 3. 激活虚拟环境
+source ytapi-venv/bin/activate
+
+# 4. 安装依赖
+pip install requests youtube-transcript-api
+
+# 5. 安装系统依赖（如未安装）
+sudo apt install ffmpeg  # Ubuntu/Debian
+pip install yt-dlp
+
+# 6. 运行测试
+python build_from_video_id.py QqeECC13HcM
+
+# 7. 退出虚拟环境（使用完毕后）
+deactivate
+```
+
+### 💡 使用技巧
+
+**虚拟环境管理：**
+```bash
+# 每次使用前激活环境
+source ~/ytapi-venv/bin/activate
+
+# 检查虚拟环境状态
+which python  # 应显示虚拟环境路径
+
+# 查看已安装的包
+pip list
+
+# 升级依赖包
+pip install --upgrade requests youtube-transcript-api
+
+# 使用完毕后退出
+deactivate
+```
+
+**常见问题解决：**
+
+❓ **虚拟环境激活失败？**
+```bash
+# 检查虚拟环境是否存在
+ls ~/ytapi-venv/bin/activate
+
+# 如果不存在，重新创建
+python3 -m venv ~/ytapi-venv
+```
+
+❓ **Python命令找不到？**
+```bash
+# 确认虚拟环境已激活（提示符会有 (ytapi-venv) 前缀）
+source ~/ytapi-venv/bin/activate
+
+# 确认Python路径
+which python
+# 应显示: /home/user/ytapi-venv/bin/python
+```
+
+❓ **依赖包导入错误？**
+```bash
+# 在虚拟环境中重新安装
+pip install --force-reinstall requests youtube-transcript-api
+```
+
+### 🧪 环境测试
+
+我们提供了一个环境测试脚本，可以快速检查您的环境是否配置正确：
+
+```bash
+# 激活虚拟环境
+source ~/ytapi-venv/bin/activate
+
+# 运行环境测试
+python test_environment.py
+```
+
+**测试脚本会检查：**
+- ✅ Python版本 (3.8+)
+- ✅ 必需的Python模块
+- ✅ 系统工具 (ffmpeg, yt-dlp等)
+- ✅ 虚拟环境状态
+- ✅ 项目文件完整性
+
+**成功输出示例：**
+```
+LearnSubStudio 环境测试
+==============================
+🐍 检查Python版本...
+   ✅ Python 3.9.7 (满足要求)
+
+📦 检查Python依赖模块...
+   ✅ requests - 网络请求库
+   ✅ youtube_transcript_api - YouTube字幕API
+
+🔧 检查系统工具...
+   ✅ ffmpeg - 视频处理工具
+   ✅ yt-dlp - YouTube下载器
+
+🎉 环境测试全部通过！可以开始使用 LearnSubStudio
+```
+
+## 🖥️ 虚拟机部署示例
+
+### 典型的虚拟机运行流程
+
+如果您已经在虚拟机中设置了项目环境，典型的使用流程如下：
+
+```bash
+# 1. 连接到虚拟机 (SSH 或直接登录)
+ssh user@your-vm-ip
+
+# 2. 进入项目目录
+cd /path/to/LearnSubStudio
+
+# 3. 激活虚拟环境
+source ~/ytapi-venv/bin/activate
+
+# 4. 运行项目
+python build_from_video_id.py QqeECC13HcM
+
+# 5. 使用完整功能
+python build_from_video_id.py QqeECC13HcM --show-intro --learning-mode --output ./videos/
+
+# 6. 退出虚拟环境 (可选)
+deactivate
+```
+
+### 一键启动脚本
+
+项目提供了一个智能启动脚本 `run_example.sh`，可以：
+- 🔍 自动检测和激活虚拟环境
+- 🧪 运行环境测试
+- 🚀 启动项目
+- 📁 显示生成的文件
+
+```bash
+# 运行示例（使用默认视频）
+./run_example.sh
+
+# 使用自定义参数
+./run_example.sh QqeECC13HcM --show-intro --learning-mode
+
+# 完整功能演示
+./run_example.sh QqeECC13HcM --output ./videos/ --show-intro --learning-mode --summary "AI学习视频"
+```
+
+**自定义启动脚本：**
+
+如果您需要更简单的脚本：
+
+```bash
+# 创建简单的启动脚本
+cat > my_run.sh << 'EOF'
+#!/bin/bash
+source ~/ytapi-venv/bin/activate
+python build_from_video_id.py "$@"
+EOF
+
+chmod +x my_run.sh
+
+# 使用
+./my_run.sh QqeECC13HcM --show-intro --learning-mode
+```
+
+### 虚拟机环境验证
+
+```bash
+# 验证虚拟环境
+echo $VIRTUAL_ENV  # 应显示虚拟环境路径
+
+# 验证Python路径
+which python  # 应显示虚拟环境中的Python
+
+# 运行环境测试
+python test_environment.py
 ```
 
 ### 系统依赖（Ubuntu/Debian）
@@ -225,6 +469,26 @@ set UNSPLASH_ACCESS_KEY=your-unsplash-key
 | `VIDEO_H` | 视频高度 | 1920 |
 | `HISTORY_MAX_ROWS` | 历史字幕最大行数 | 28 |
 | `DEFAULT_SHOW_BARS` | 是否默认显示频谱 | True |
+
+## 📦 项目资源
+
+项目包含以下预置文件：
+
+```
+cover.jpg              # 默认封面图片（1080x1920，深蓝色渐变）
+build_from_video_id.py # 主程序脚本
+test_environment.py    # 环境测试脚本
+run_example.sh         # 快速启动脚本（虚拟机友好）
+README.md             # 项目文档
+LICENSE               # 开源许可证
+.gitignore            # Git忽略规则
+```
+
+**📸 关于默认封面 `cover.jpg`：**
+- 专为短视频格式设计的1080x1920分辨率
+- 深蓝色渐变背景，适合各种视频内容
+- 当Unsplash API不可用或未配置时自动使用
+- 您可以替换为自己的封面图片
 
 ## 📁 输出文件
 

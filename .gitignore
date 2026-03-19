@@ -163,16 +163,21 @@ cython_debug/
 *.mp4
 *.ass
 *.txt
-*.jpg
-*.jpeg
-*.png
 *.webp
 *.bmp
 *.gif
 
-# Generated video files
-QqeECC13HcM.*
+# Generated image files (but keep project assets)
 *.cover.jpg
+QqeECC13HcM.*
+
+# Keep project assets - exceptions to image ignoring
+!cover.jpg
+!README.md
+!*.md
+
+# Generated or downloaded images (specific patterns)
+# Note: cover.jpg is the default project asset and should be kept
 
 # Cache files
 translation_cache.json
