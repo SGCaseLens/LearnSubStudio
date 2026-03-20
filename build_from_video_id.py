@@ -1660,7 +1660,7 @@ def build_video(
         )
         
         # 更新后续处理的输入标签
-        ass_input = title_output.replace('title', 'tmp')
+        ass_input = title_output
     else:
         # 生成多行标题drawtext滤镜
         title_drawtext, title_output = create_multi_line_title_drawtext(wrapped_title, safe_fontfile, TITLE_SAFE_Y)
@@ -1678,7 +1678,7 @@ def build_video(
         )
         
         # 更新后续处理的输入标签
-        ass_input = title_output.replace('title', 'tmp')
+        ass_input = title_output
 
     if subtitle_text:
         filter_complex += (
