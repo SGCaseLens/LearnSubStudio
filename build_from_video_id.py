@@ -57,8 +57,45 @@ DEFAULT_LIBRETRANSLATE_ENDPOINT = os.environ.get(
 DEFAULT_LIBRETRANSLATE_API_KEY = os.environ.get("LIBRETRANSLATE_API_KEY", "").strip() or None
 TRANSLATION_CACHE_FILE = "translation_cache.json"
 
-TITLE_FONTFILE = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-ASS_FONT_NAME = "Noto Sans CJK SC"
+# 智能字体检测 - 优先使用Ubuntu字体，回退到系统最佳字体
+def detect_best_font():
+    """检测系统中最佳可用字体，优先Ubuntu字体"""
+    import platform
+    
+    system = platform.system()
+    font_candidates = []
+    
+    if system == "Darwin":  # macOS
+        font_candidates = [
+            ("/usr/local/share/fonts/Ubuntu-Regular.ttf", "Ubuntu"),  # Homebrew安装
+            ("/System/Library/Fonts/Ubuntu-Regular.ttf", "Ubuntu"),
+            ("/System/Library/Fonts/Helvetica.ttc", "Helvetica"),
+            ("/System/Library/Fonts/Avenir.ttc", "Avenir"),
+        ]
+    elif system == "Linux":
+        font_candidates = [
+            ("/usr/share/fonts/truetype/ubuntu/Ubuntu-Regular.ttf", "Ubuntu"),  # 首选Ubuntu
+            ("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "Noto Sans CJK SC"),  # 中文支持
+            ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "DejaVu Sans"),
+            ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", "Liberation Sans"),
+        ]
+    else:  # Windows
+        font_candidates = [
+            ("C:/Windows/Fonts/Ubuntu-R.ttf", "Ubuntu"),
+            ("C:/Windows/Fonts/arial.ttf", "Arial"),
+            ("C:/Windows/Fonts/calibri.ttf", "Calibri"),
+        ]
+    
+    # 检测第一个可用的字体
+    for font_path, font_name in font_candidates:
+        if os.path.exists(font_path):
+            return font_path, font_name
+    
+    # 如果都没找到，使用默认回退
+    return "/System/Library/Fonts/Helvetica.ttc", "Helvetica"
+
+# 自动检测并设置字体
+TITLE_FONTFILE, ASS_FONT_NAME = detect_best_font()
 
 DEFAULT_SHOW_BARS = True
 HISTORY_MAX_ROWS = 28  # 增加到原来的2倍，以容纳更多内容
@@ -1156,18 +1193,32 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
         
         y_pos = base_y + (i * line_height)
         
-        drawtext_filter = (
-            f"drawtext="
-            f"fontfile='{safe_fontfile}':"
-            f"text='{safe_line}':"
-            f"fontcolor=#FF6600:"
-            f"fontsize=40:"
-            f"box=1:"
-            f"boxcolor=black@0.45:"
-            f"boxborderw=20:"
-            f"x=(w-text_w)/2:"
-            f"y={y_pos}"
-        )
+        # 只给第一行添加背景框，避免背景覆盖问题
+        if i == 0:
+            # 第一行：带背景框
+            drawtext_filter = (
+                f"drawtext="
+                f"fontfile='{safe_fontfile}':"
+                f"text='{safe_line}':"
+                f"fontcolor=#FF6600:"
+                f"fontsize=40:"
+                f"box=1:"
+                f"boxcolor=black@0.45:"
+                f"boxborderw=20:"
+                f"x=(w-text_w)/2:"
+                f"y={y_pos}"
+            )
+        else:
+            # 后续行：不带背景框，避免覆盖前面行的文字
+            drawtext_filter = (
+                f"drawtext="
+                f"fontfile='{safe_fontfile}':"
+                f"text='{safe_line}':"
+                f"fontcolor=#FF6600:"
+                f"fontsize=40:"
+                f"x=(w-text_w)/2:"
+                f"y={y_pos}"
+            )
         
         drawtext_filters.append(drawtext_filter)
     
@@ -1229,8 +1280,8 @@ def write_ass_karaoke(
     # 计算短视频安全区字幕边距 - 英文在上，中文在下
     # ASS中MarginV是从底部开始计算：值越大越靠近顶部，值越小越靠近底部
     english_margin_v = SAFE_AREA_BOTTOM + 145  # 英文字幕在上方：425px距底
-    chinese_margin_v = SAFE_AREA_BOTTOM + 137  # 中文字幕在下方：417px距底，与历史字幕区保持8px一致间距
-    subtitle_line_gap = 8  # 英中文字幕间距：8px，与历史字幕区保持一致
+    chinese_margin_v = SAFE_AREA_BOTTOM + 95   # 中文字幕在下方：375px距底，确保足够安全间距避免覆盖
+    subtitle_line_gap = 50  # 英中文字幕间距：50px，完全避免英文字幕的轮廓和阴影覆盖中文字幕
 
     header = f"""[Script Info]
 ScriptType: v4.00+
