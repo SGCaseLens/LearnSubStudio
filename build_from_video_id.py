@@ -47,7 +47,7 @@ TITLE_SAFE_Y = SAFE_AREA_TOP + 40        # 标题安全位置：200px
 SUMMARY_SAFE_Y = SAFE_AREA_TOP + 120     # 摘要安全位置：280px  
 HISTORY_SAFE_TOP = SAFE_AREA_TOP + 200   # 历史区域顶部：360px
 HISTORY_SAFE_BOTTOM = VIDEO_H - SAFE_AREA_BOTTOM - 380  # 历史区域底部：1260px
-SPECTRUM_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 320     # 频谱安全位置：1320px
+SPECTRUM_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 440     # 频谱安全位置：1200px
 SUBTITLE_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 120     # 字幕安全位置：1520px
 
 DEFAULT_LIBRETRANSLATE_ENDPOINT = os.environ.get(
@@ -640,7 +640,7 @@ def build_karaoke_en_line(
     en_text: str,
     duration_sec: float,
     keywords: List[str] | None = None,
-    max_units: float = 28.0,
+    max_units: float = 32.0,
 ) -> str:
     en_text = clean_text(en_text)
     # 确保英文单词之间有正确的空格
@@ -708,8 +708,7 @@ def build_bilingual_karaoke_ass_text(
     zh_text: str,
     duration_sec: float,
     keywords: List[str] | None = None,
-    phrase_note: str = "",
-    max_units_en: float = 28.0,
+    max_units_en: float = 32.0,
     max_units_zh: float = 24.0,
 ) -> tuple[str, str]:
     """
@@ -731,11 +730,6 @@ def build_bilingual_karaoke_ass_text(
         zh_wrapped = wrap_text_by_visual_width(zh_text, max_units_zh)
         zh_line = ass_escape_text(zh_wrapped).replace(r"\\N", r"\N")
         
-        # 添加普通学习笔记（如果有的话）
-        if phrase_note:
-            note_wrapped = wrap_text_by_visual_width(phrase_note, 22.0)
-            note_escaped = ass_escape_text(note_wrapped).replace(r"\\N", r"\N")
-            zh_line = f"{zh_line}\\N{{\\fs22\\alpha&H40&}}{note_escaped}"
 
     return en_line, zh_line
 
@@ -823,16 +817,6 @@ def translate_with_libretranslate(
 
 
 
-def extract_learning_note(en_text: str, zh_text: str) -> str:
-    words = re.findall(r"[A-Za-z][A-Za-z'-]{4,}", en_text)
-    if not words:
-        return ""
-    longest = max(words, key=len)
-    if len(longest) < 5:
-        return ""
-    return clean_text(f"{longest} = {zh_text[:10]}") if zh_text else ""
-
-
 def build_bilingual_items_with_libretranslate(
     items: List[Dict],
     endpoint: str = DEFAULT_LIBRETRANSLATE_ENDPOINT,
@@ -872,7 +856,6 @@ def build_bilingual_items_with_libretranslate(
             {
                 "en": en_text,
                 "zh": zh_text,
-                "note": extract_learning_note(en_text, zh_text),
                 "start": item["start"],
                 "duration": item["duration"],
                 "end": item["end"],
@@ -1184,10 +1167,10 @@ YCbCr Matrix: TV.601
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
-Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H00BBBBBB,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
+Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
 Style: Chapter,{ASS_FONT_NAME},34,&H00FFFFFF,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,8,60,60,500,1
-Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H00FFFFFF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
-Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-8},&H00AAAAAA,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
+Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
+Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -1208,7 +1191,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         # 短视频安全区历史字幕布局 - 使用最终的柱状图显示决定
         if show_bars:
             history_top_y = HISTORY_SAFE_TOP      # 安全区内开始
-            history_bottom_y = SPECTRUM_SAFE_Y - 60   # 频谱图上方留出空间
+            history_bottom_y = SPECTRUM_SAFE_Y - 40   # 频谱图上方留出空间
         else:
             history_top_y = HISTORY_SAFE_TOP      # 安全区内开始  
             history_bottom_y = HISTORY_SAFE_BOTTOM  # 字幕区上方安全结束
@@ -1286,9 +1269,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 item["zh"],
                 item["duration"],
                 keywords=keywords,
-                phrase_note=item.get("note", ""),
-                max_units_en=40.0,  # 44px字体下允许更多文字，减少换行概率
-                max_units_zh=32.0,  # 相应增加中文字幕长度
+                max_units_en=32.0,  # 与历史字幕宽度保持一致
+                max_units_zh=24.0,  # 与历史字幕宽度保持一致
             )
             
             # 英文字幕：Layer 3, EnglishMain样式，更突出，主要位置
@@ -1575,7 +1557,7 @@ def build_video(
             f"crop={VIDEO_W}:{VIDEO_H},"
             f"setsar=1,"
             f"zoompan=z='min(1.15,1+on/2500)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
-            f"d=1:s={VIDEO_W}x{VIDEO_H}:fps=25[bg];"
+            f"s={VIDEO_W}x{VIDEO_H}:fps=25[bg];"
 
             "[1:a]"
             "aformat=channel_layouts=stereo,"
@@ -1613,7 +1595,7 @@ def build_video(
             f"crop={VIDEO_W}:{VIDEO_H},"
             f"setsar=1,"
             f"zoompan=z='min(1.15,1+on/2500)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
-            f"d=1:s={VIDEO_W}x{VIDEO_H}:fps=25[bg];"
+            f"s={VIDEO_W}x{VIDEO_H}:fps=25[bg];"
 
             f"[bg]drawtext="
             f"fontfile='{safe_fontfile}':"
