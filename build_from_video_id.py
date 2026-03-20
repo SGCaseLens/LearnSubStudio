@@ -422,7 +422,7 @@ def wrap_text_by_visual_width(text: str, max_units: float) -> str:
     return r"\N".join(lines)
 
 
-def wrap_title_for_mobile(title: str, max_units_per_line: float = 13.5, max_lines: int = 3) -> str:
+def wrap_title_for_mobile(title: str, max_units_per_line: float = 20.0, max_lines: int = 3) -> str:
     title = clean_text(title)
     if not title:
         return ""
@@ -1152,9 +1152,9 @@ def write_ass_karaoke(
     
     # 计算短视频安全区字幕边距 - 英文在上，中文在下
     # ASS中MarginV是从底部开始计算：值越大越靠近顶部，值越小越靠近底部
-    english_margin_v = SAFE_AREA_BOTTOM + 180  # 英文字幕在上方：460px距底，为多行预留空间
-    chinese_margin_v = SAFE_AREA_BOTTOM + 20   # 中文字幕在下方：300px距底
-    subtitle_line_gap = 150  # 英中文字幕间距：150px，确保3行英文也不覆盖中文
+    english_margin_v = SAFE_AREA_BOTTOM + 145  # 英文字幕在上方：425px距底，适中间距
+    chinese_margin_v = SAFE_AREA_BOTTOM + 25   # 中文字幕在下方：305px距底
+    subtitle_line_gap = 120  # 英中文字幕间距：120px，平衡美观与安全性
 
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -1166,7 +1166,7 @@ YCbCr Matrix: TV.601
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
+Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
 Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
 Style: Chapter,{ASS_FONT_NAME},34,&H00FFFFFF,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,8,60,60,500,1
 Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
@@ -1505,7 +1505,7 @@ def build_video(
     intro_duration: float = 1.5,
     outro_duration: float = 2.0,
 ) -> None:
-    wrapped_title = wrap_title_for_mobile(video_title, max_units_per_line=14.0, max_lines=3)  # 针对40号字体优化，确保不超出边界
+    wrapped_title = wrap_title_for_mobile(video_title, max_units_per_line=30.0, max_lines=3)  # 40号字体支持更长标题，确保完整显示
     safe_title = sanitize_drawtext_text(wrapped_title)
     safe_ass = ffmpeg_escape_path(str(Path(ass_path).resolve()))
     safe_fontfile = ffmpeg_escape_path(TITLE_FONTFILE)
