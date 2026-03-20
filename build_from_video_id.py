@@ -237,10 +237,13 @@ def fix_english_contractions(text: str) -> str:
     
     # 定义常见的英文缩写模式
     contractions = {
-        # 基本缩写
+        # 基本缩写（支持大小写变体）
         r"\bhow'\s+s\b": "how's",
-        r"\byou'\s+re\b": "you're",
+        r"\bHow'\s+s\b": "How's",
+        r"\byou'\s+re\b": "you're", 
+        r"\bYou'\s+re\b": "You're",
         r"\blet'\s+s\b": "let's",
+        r"\bLet'\s+s\b": "Let's", 
         r"\bI'\s+m\b": "I'm",
         r"\bdon'\s+t\b": "don't",
         r"\bcan'\s+t\b": "can't",
@@ -256,9 +259,11 @@ def fix_english_contractions(text: str) -> str:
         r"\bshouldn'\s+t\b": "shouldn't",
         r"\bcouldn'\s+t\b": "couldn't",
         
-        # 所有格和其他常见形式
+        # 所有格和其他常见形式（支持大小写变体）
         r"\bit'\s+s\b": "it's",
+        r"\bIt'\s+s\b": "It's",
         r"\bthat'\s+s\b": "that's",
+        r"\bThat'\s+s\b": "That's",
         r"\bwhat'\s+s\b": "what's",
         r"\bwhere'\s+s\b": "where's",
         r"\bwhen'\s+s\b": "when's",
@@ -267,6 +272,12 @@ def fix_english_contractions(text: str) -> str:
         r"\bshe'\s+s\b": "she's",
         r"\bthere'\s+s\b": "there's",
         r"\bhere'\s+s\b": "here's",
+        
+        # are 缩写形式（支持大小写变体）
+        r"\bwe'\s+re\b": "we're",
+        r"\bWe'\s+re\b": "We're",
+        r"\bthey'\s+re\b": "they're",
+        r"\bThey'\s+re\b": "They're",
         
         # will 缩写
         r"\bI'\s+ll\b": "I'll",
@@ -763,11 +774,14 @@ def build_karaoke_en_line(
     en_text = ensure_english_word_spacing(en_text)
     # 进一步确保单词间有空格：在字母和字母、字母和数字之间添加空格
     en_text = re.sub(r'([a-zA-Z])([A-Z][a-z])', r'\1 \2', en_text)
-    en_text = re.sub(r'([a-z])([A-Z])', r'\1 \2', en_text)  
+    en_text = re.sub(r'([a-z])([A-Z])', r'\1 \2', en_text)
     en_text = re.sub(r'([A-Za-z])(\d)', r'\1 \2', en_text)
     en_text = re.sub(r'(\d)([A-Za-z])', r'\1 \2', en_text)
     # 规范化多个空格为单个空格
     en_text = re.sub(r'[ \t]+', ' ', en_text).strip()
+    
+    # 最后再次应用缩写修复，确保之前的正则处理没有破坏缩写词
+    en_text = fix_english_contractions(en_text)
     
     keyword_set = {k.lower() for k in (keywords or [])}
 
@@ -859,6 +873,9 @@ def format_bilingual_block(
     """
     格式化分层双语历史块：返回(英文文本, 中文文本)
     """
+    # 修复英文缩写词中的异常空格
+    en_text = fix_english_contractions(en_text)
+    
     en = wrap_text_by_visual_width(en_text, max_units_en)
     en = ass_escape_text(en).replace(r"\\N", r"\N")
     
@@ -1839,8 +1856,8 @@ def build_video(
     else:
         # 无片头：直接显示字幕，片尾保留背景和标题
         filter_complex += (
-            f"{ass_input}ass='{safe_ass}'"
-            f",fade=t=in:st=0:d={intro_duration}[v]"
+            f"{ass_input}ass='{safe_ass}':force_style='PlayResX={VIDEO_W},PlayResY={VIDEO_H}'[subtitled];"
+            f"[subtitled]fade=t=in:st=0:d={intro_duration}[v]"
         )
 
     # 检测最佳编码参数
