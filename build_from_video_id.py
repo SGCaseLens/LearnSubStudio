@@ -227,7 +227,85 @@ def remove_garbled_chars(text: str) -> str:
     return text
 
 
+def fix_english_contractions(text: str) -> str:
+    """
+    修复英文缩写词中单引号后的异常空格
+    例如: "how' s" → "how's", "you' re" → "you're"
+    """
+    if not text:
+        return text
+    
+    # 定义常见的英文缩写模式
+    contractions = {
+        # 基本缩写
+        r"\bhow'\s+s\b": "how's",
+        r"\byou'\s+re\b": "you're",
+        r"\blet'\s+s\b": "let's",
+        r"\bI'\s+m\b": "I'm",
+        r"\bdon'\s+t\b": "don't",
+        r"\bcan'\s+t\b": "can't",
+        r"\bwon'\s+t\b": "won't",
+        r"\baren'\s+t\b": "aren't",
+        r"\bisn'\s+t\b": "isn't",
+        r"\bwasn'\s+t\b": "wasn't",
+        r"\bweren'\s+t\b": "weren't",
+        r"\bhasn'\s+t\b": "hasn't",
+        r"\bhaven'\s+t\b": "haven't",
+        r"\bhadn'\s+t\b": "hadn't",
+        r"\bwouldn'\s+t\b": "wouldn't",
+        r"\bshouldn'\s+t\b": "shouldn't",
+        r"\bcouldn'\s+t\b": "couldn't",
+        
+        # 所有格和其他常见形式
+        r"\bit'\s+s\b": "it's",
+        r"\bthat'\s+s\b": "that's",
+        r"\bwhat'\s+s\b": "what's",
+        r"\bwhere'\s+s\b": "where's",
+        r"\bwhen'\s+s\b": "when's",
+        r"\bwho'\s+s\b": "who's",
+        r"\bhe'\s+s\b": "he's",
+        r"\bshe'\s+s\b": "she's",
+        r"\bthere'\s+s\b": "there's",
+        r"\bhere'\s+s\b": "here's",
+        
+        # will 缩写
+        r"\bI'\s+ll\b": "I'll",
+        r"\byou'\s+ll\b": "you'll",
+        r"\bhe'\s+ll\b": "he'll",
+        r"\bshe'\s+ll\b": "she'll",
+        r"\bit'\s+ll\b": "it'll",
+        r"\bwe'\s+ll\b": "we'll",
+        r"\bthey'\s+ll\b": "they'll",
+        r"\bthat'\s+ll\b": "that'll",
+        
+        # have 缩写
+        r"\bI'\s+ve\b": "I've",
+        r"\byou'\s+ve\b": "you've",
+        r"\bwe'\s+ve\b": "we've",
+        r"\bthey'\s+ve\b": "they've",
+        
+        # would 缩写
+        r"\bI'\s+d\b": "I'd",
+        r"\byou'\s+d\b": "you'd",
+        r"\bhe'\s+d\b": "he'd",
+        r"\bshe'\s+d\b": "she'd",
+        r"\bit'\s+d\b": "it'd",
+        r"\bwe'\s+d\b": "we'd",
+        r"\bthey'\s+d\b": "they'd",
+    }
+    
+    # 逐个应用修复
+    fixed_text = text
+    for pattern, replacement in contractions.items():
+        fixed_text = re.sub(pattern, replacement, fixed_text, flags=re.IGNORECASE)
+    
+    return fixed_text
+
+
 def clean_text(text: str) -> str:
+    # 先修复英文缩写中的异常空格
+    text = fix_english_contractions(text)
+    # 然后进行常规的文本清理
     return remove_garbled_chars(text)
 
 
@@ -1193,32 +1271,16 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
         
         y_pos = base_y + (i * line_height)
         
-        # 只给第一行添加背景框，避免背景覆盖问题
-        if i == 0:
-            # 第一行：带背景框
-            drawtext_filter = (
-                f"drawtext="
-                f"fontfile='{safe_fontfile}':"
-                f"text='{safe_line}':"
-                f"fontcolor=#FF6600:"
-                f"fontsize=40:"
-                f"box=1:"
-                f"boxcolor=black@0.45:"
-                f"boxborderw=20:"
-                f"x=(w-text_w)/2:"
-                f"y={y_pos}"
-            )
-        else:
-            # 后续行：不带背景框，避免覆盖前面行的文字
-            drawtext_filter = (
-                f"drawtext="
-                f"fontfile='{safe_fontfile}':"
-                f"text='{safe_line}':"
-                f"fontcolor=#FF6600:"
-                f"fontsize=40:"
-                f"x=(w-text_w)/2:"
-                f"y={y_pos}"
-            )
+        # 多行标题所有行都不显示背景，保持简洁的视觉效果
+        drawtext_filter = (
+            f"drawtext="
+            f"fontfile='{safe_fontfile}':"
+            f"text='{safe_line}':"
+            f"fontcolor=#FF6600:"
+            f"fontsize=40:"
+            f"x=(w-text_w)/2:"
+            f"y={y_pos}"
+        )
         
         drawtext_filters.append(drawtext_filter)
     
@@ -1280,8 +1342,8 @@ def write_ass_karaoke(
     # 计算短视频安全区字幕边距 - 英文在上，中文在下
     # ASS中MarginV是从底部开始计算：值越大越靠近顶部，值越小越靠近底部
     english_margin_v = SAFE_AREA_BOTTOM + 145  # 英文字幕在上方：425px距底
-    chinese_margin_v = SAFE_AREA_BOTTOM + 95   # 中文字幕在下方：375px距底，确保足够安全间距避免覆盖
-    subtitle_line_gap = 50  # 英中文字幕间距：50px，完全避免英文字幕的轮廓和阴影覆盖中文字幕
+    chinese_margin_v = SAFE_AREA_BOTTOM + 65   # 中文字幕在下方：345px距底，使用保守间距确保完全无覆盖
+    subtitle_line_gap = 80  # 英中文字幕间距：80px，保守设计，充分避免字体渲染差异导致的覆盖问题
 
     header = f"""[Script Info]
 ScriptType: v4.00+
