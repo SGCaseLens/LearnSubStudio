@@ -311,7 +311,8 @@ def sanitize_drawtext_text(text: str) -> str:
     text = text.replace(",", r"\,")
     text = text.replace("[", r"\[")
     text = text.replace("]", r"\]")
-    text = text.replace("\n", r"\n")
+    # 保留真实的换行符，让FFmpeg drawtext能够正确处理多行文本
+    # text = text.replace("\n", r"\n")  # 注释掉这行，保持原始换行符
     return text
 
 
@@ -1166,11 +1167,11 @@ YCbCr Matrix: TV.601
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
-Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
+Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,0,2,2,80,80,{english_margin_v},1
+Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,0,1,2,80,80,{chinese_margin_v},1
 Style: Chapter,{ASS_FONT_NAME},34,&H00FFFFFF,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,8,60,60,500,1
-Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
-Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
+Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,0,1,8,80,80,0,1
+Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,0,0.5,8,80,80,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -2055,7 +2056,7 @@ def main() -> None:
     print("3/8 生成字幕和文本...")
     start_step("生成字幕和文本")
     keywords = extract_keywords(items, top_n=8)
-    chapters = build_chapter_markers(bilingual_items, sections=3)
+    chapters = build_chapter_markers(bilingual_items, sections=0)  # 默认关闭章节标记功能
     # 如果启用片头，字幕需要延后显示
     intro_offset_time = 1.5 if show_intro else 0.0  # 片头时长1.5秒
     # 先用None作为subtitle_end_time，在音频下载后重新生成字幕
