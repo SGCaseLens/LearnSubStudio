@@ -1094,7 +1094,7 @@ def get_audio_visualization_params(content_type: str) -> Dict[str, str]:
 
 
 def build_chapter_markers(items: List[Dict], sections: int = 3) -> List[Tuple[float, float, str]]:
-    if not items:
+    if not items or sections <= 0:  # 如果没有内容或章节数为0，返回空列表
         return []
     total_start = items[0]["start"]
     total_end = items[-1]["end"]
