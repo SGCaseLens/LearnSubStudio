@@ -1109,6 +1109,81 @@ def build_chapter_markers(items: List[Dict], sections: int = 3) -> List[Tuple[fl
     return markers
 
 
+def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, base_y: int = None) -> tuple[str, str]:
+    """
+    为多行标题创建独立的drawtext滤镜
+    返回 (滤镜字符串, 最后的标签名称)
+    """
+    if base_y is None:
+        base_y = TITLE_SAFE_Y
+    
+    # 分割标题为多行
+    lines = [line.strip() for line in wrapped_title.split('\n') if line.strip()]
+    
+    if not lines:
+        return "", "[input]"
+    
+    if len(lines) == 1:
+        # 单行标题，使用原来的方式
+        safe_line = sanitize_drawtext_text(lines[0])
+        drawtext_filter = (
+            f"drawtext="
+            f"fontfile='{safe_fontfile}':"
+            f"text='{safe_line}':"
+            f"fontcolor=#FF6600:"
+            f"fontsize=40:"
+            f"box=1:"
+            f"boxcolor=black@0.45:"
+            f"boxborderw=20:"
+            f"x=(w-text_w)/2:"
+            f"y={base_y}"
+        )
+        return drawtext_filter, "[title1]"
+    
+    # 多行标题，为每行创建独立的drawtext滤镜
+    drawtext_filters = []
+    line_height = 50  # 行间距
+    
+    for i, line in enumerate(lines):
+        # 转义单引号和特殊字符，但不转义换行符（因为这里每行是独立的）
+        safe_line = line.replace("\\", r"\\\\")
+        safe_line = safe_line.replace("'", r"\'")
+        safe_line = safe_line.replace(":", r"\:")
+        safe_line = safe_line.replace("%", r"\%")
+        safe_line = safe_line.replace(",", r"\,")
+        safe_line = safe_line.replace("[", r"\[")
+        safe_line = safe_line.replace("]", r"\]")
+        
+        y_pos = base_y + (i * line_height)
+        
+        drawtext_filter = (
+            f"drawtext="
+            f"fontfile='{safe_fontfile}':"
+            f"text='{safe_line}':"
+            f"fontcolor=#FF6600:"
+            f"fontsize=40:"
+            f"box=1:"
+            f"boxcolor=black@0.45:"
+            f"boxborderw=20:"
+            f"x=(w-text_w)/2:"
+            f"y={y_pos}"
+        )
+        
+        drawtext_filters.append(drawtext_filter)
+    
+    # 组合多个drawtext滤镜
+    filter_string = ""
+    input_tag = "[input]"
+    
+    for i, drawtext in enumerate(drawtext_filters):
+        output_tag = f"[title{i+1}]"
+        filter_string += f"{input_tag}{drawtext}{output_tag};"
+        input_tag = output_tag  # 下一个滤镜的输入是当前的输出
+    
+    final_tag = f"[title{len(drawtext_filters)}]"
+    return filter_string, final_tag
+
+
 def calc_history_block_height(item: Dict) -> int:
     # 统一字体大小后的历史字幕高度计算
     en_wrapped = wrap_text_by_visual_width(item.get("en", ""), 32.0)
@@ -1117,8 +1192,8 @@ def calc_history_block_height(item: Dict) -> int:
     en_lines = count_ass_lines(en_wrapped)
     zh_lines = count_ass_lines(zh_wrapped) if zh_wrapped else 0
 
-    # 统一字体大小(40px)后，每行高度一致
-    line_h = 40  # 历史字体40px对应的行高
+    # 统一字体大小(38px)后，每行高度一致
+    line_h = 42  # 历史字体38px对应的行高
     line_gap = 8  # 英中文之间的行间距
     
     # 英文行数 + 行间距（如果有中文） + 中文行数
@@ -1153,9 +1228,9 @@ def write_ass_karaoke(
     
     # 计算短视频安全区字幕边距 - 英文在上，中文在下
     # ASS中MarginV是从底部开始计算：值越大越靠近顶部，值越小越靠近底部
-    english_margin_v = SAFE_AREA_BOTTOM + 145  # 英文字幕在上方：425px距底，适中间距
-    chinese_margin_v = SAFE_AREA_BOTTOM + 25   # 中文字幕在下方：305px距底
-    subtitle_line_gap = 120  # 英中文字幕间距：120px，平衡美观与安全性
+    english_margin_v = SAFE_AREA_BOTTOM + 145  # 英文字幕在上方：425px距底
+    chinese_margin_v = SAFE_AREA_BOTTOM + 137  # 中文字幕在下方：417px距底，与历史字幕区保持8px一致间距
+    subtitle_line_gap = 8  # 英中文字幕间距：8px，与历史字幕区保持一致
 
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -1167,11 +1242,11 @@ YCbCr Matrix: TV.601
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,0,2,2,80,80,{english_margin_v},1
-Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,0,1,2,80,80,{chinese_margin_v},1
+Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
+Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
 Style: Chapter,{ASS_FONT_NAME},34,&H00FFFFFF,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,8,60,60,500,1
-Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,0,1,8,80,80,0,1
-Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-8},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,0,0.5,8,80,80,0,1
+Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
+Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -1572,24 +1647,24 @@ def build_video(
         else:
             filter_complex += "[bars];"
         
+        # 生成多行标题drawtext滤镜
+        title_drawtext, title_output = create_multi_line_title_drawtext(wrapped_title, safe_fontfile, TITLE_SAFE_Y)
+        
         filter_complex += (
 
             "[bg][bars]"
             f"overlay=(W-w)/2:{overlay_y}[tmp1];"
 
-            f"[tmp1]drawtext="
-            f"fontfile='{safe_fontfile}':"
-            f"text='{safe_title}':"
-            f"fontcolor=#FF6600:"  # 使用十六进制橙色值
-            f"fontsize=40:"  # 从48减小到40，确保标题不会超出边界
-            f"line_spacing=15:"  # 调整行间距，适应40号字体
-            f"box=1:"
-            f"boxcolor=black@0.45:"
-            f"boxborderw=20:"
-            f"x=(w-text_w)/2:"
-            f"y={TITLE_SAFE_Y}[tmp2];"  # 使用短视频安全区位置
+            # 添加多行标题
+            f"{title_drawtext.replace('[input]', '[tmp1]')}"
         )
+        
+        # 更新后续处理的输入标签
+        ass_input = title_output.replace('title', 'tmp')
     else:
+        # 生成多行标题drawtext滤镜
+        title_drawtext, title_output = create_multi_line_title_drawtext(wrapped_title, safe_fontfile, TITLE_SAFE_Y)
+        
         filter_complex = (
             f"[0:v]"
             f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,"
@@ -1598,22 +1673,16 @@ def build_video(
             f"zoompan=z='min(1.15,1+on/2500)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
             f"s={VIDEO_W}x{VIDEO_H}:fps=25[bg];"
 
-            f"[bg]drawtext="
-            f"fontfile='{safe_fontfile}':"
-            f"text='{safe_title}':"
-            f"fontcolor=#FF6600:"  # 使用十六进制橙色值
-            f"fontsize=40:"  # 从48减小到40，确保标题不会超出边界
-            f"line_spacing=15:"  # 调整行间距，适应40号字体
-            f"box=1:"
-            f"boxcolor=black@0.45:"
-            f"boxborderw=20:"
-            f"x=(w-text_w)/2:"
-            f"y={TITLE_SAFE_Y}[tmp2];"  # 使用短视频安全区位置
+            # 添加多行标题
+            f"{title_drawtext.replace('[input]', '[bg]')}"
         )
+        
+        # 更新后续处理的输入标签
+        ass_input = title_output.replace('title', 'tmp')
 
     if subtitle_text:
         filter_complex += (
-            f"[tmp2]drawtext="
+            f"{ass_input}drawtext="
             f"fontfile='{safe_fontfile}':"
             f"text='{subtitle_text}':"
             f"fontcolor=white:"
@@ -1626,8 +1695,7 @@ def build_video(
             f"y={SUMMARY_SAFE_Y}[tmp3];"  # 摘要安全区位置
         )
         ass_input = "[tmp3]"
-    else:
-        ass_input = "[tmp2]"
+    # ass_input 已经在前面设置好了，不需要else分支
 
     # 处理片头和字幕
     if show_intro:
