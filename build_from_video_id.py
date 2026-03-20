@@ -1848,7 +1848,7 @@ def build_video(
             f"enable='between(t,0.2,{intro_duration-0.2})'[intro_added];"
             
             # 然后添加字幕（延后显示）
-            f"[intro_added]ass='{safe_ass}':force_style='PlayResX={VIDEO_W},PlayResY={VIDEO_H}'[subtitled];"
+            f"[intro_added]ass='{safe_ass}'[subtitled];"
             
             # 只添加淡入效果，不添加全画面淡出（片尾保留背景和标题）
             f"[subtitled]fade=t=in:st=0:d=0.5[v]"
@@ -1856,7 +1856,7 @@ def build_video(
     else:
         # 无片头：直接显示字幕，片尾保留背景和标题
         filter_complex += (
-            f"{ass_input}ass='{safe_ass}':force_style='PlayResX={VIDEO_W},PlayResY={VIDEO_H}'[subtitled];"
+            f"{ass_input}ass='{safe_ass}'[subtitled];"
             f"[subtitled]fade=t=in:st=0:d={intro_duration}[v]"
         )
 
