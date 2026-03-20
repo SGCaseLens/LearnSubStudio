@@ -235,82 +235,45 @@ def fix_english_contractions(text: str) -> str:
     if not text:
         return text
     
-    # 定义常见的英文缩写模式
-    contractions = {
-        # 基本缩写（支持大小写变体）
-        r"\bhow'\s+s\b": "how's",
-        r"\bHow'\s+s\b": "How's",
-        r"\byou'\s+re\b": "you're", 
-        r"\bYou'\s+re\b": "You're",
-        r"\blet'\s+s\b": "let's",
-        r"\bLet'\s+s\b": "Let's", 
-        r"\bI'\s+m\b": "I'm",
-        r"\bdon'\s+t\b": "don't",
-        r"\bcan'\s+t\b": "can't",
-        r"\bwon'\s+t\b": "won't",
-        r"\baren'\s+t\b": "aren't",
-        r"\bisn'\s+t\b": "isn't",
-        r"\bwasn'\s+t\b": "wasn't",
-        r"\bweren'\s+t\b": "weren't",
-        r"\bhasn'\s+t\b": "hasn't",
-        r"\bhaven'\s+t\b": "haven't",
-        r"\bhadn'\s+t\b": "hadn't",
-        r"\bwouldn'\s+t\b": "wouldn't",
-        r"\bshouldn'\s+t\b": "shouldn't",
-        r"\bcouldn'\s+t\b": "couldn't",
-        
-        # 所有格和其他常见形式（支持大小写变体）
-        r"\bit'\s+s\b": "it's",
-        r"\bIt'\s+s\b": "It's",
-        r"\bthat'\s+s\b": "that's",
-        r"\bThat'\s+s\b": "That's",
-        r"\bwhat'\s+s\b": "what's",
-        r"\bwhere'\s+s\b": "where's",
-        r"\bwhen'\s+s\b": "when's",
-        r"\bwho'\s+s\b": "who's",
-        r"\bhe'\s+s\b": "he's",
-        r"\bshe'\s+s\b": "she's",
-        r"\bthere'\s+s\b": "there's",
-        r"\bhere'\s+s\b": "here's",
-        
-        # are 缩写形式（支持大小写变体）
-        r"\bwe'\s+re\b": "we're",
-        r"\bWe'\s+re\b": "We're",
-        r"\bthey'\s+re\b": "they're",
-        r"\bThey'\s+re\b": "They're",
-        
-        # will 缩写
-        r"\bI'\s+ll\b": "I'll",
-        r"\byou'\s+ll\b": "you'll",
-        r"\bhe'\s+ll\b": "he'll",
-        r"\bshe'\s+ll\b": "she'll",
-        r"\bit'\s+ll\b": "it'll",
-        r"\bwe'\s+ll\b": "we'll",
-        r"\bthey'\s+ll\b": "they'll",
-        r"\bthat'\s+ll\b": "that'll",
-        
-        # have 缩写
-        r"\bI'\s+ve\b": "I've",
-        r"\byou'\s+ve\b": "you've",
-        r"\bwe'\s+ve\b": "we've",
-        r"\bthey'\s+ve\b": "they've",
-        
-        # would 缩写
-        r"\bI'\s+d\b": "I'd",
-        r"\byou'\s+d\b": "you'd",
-        r"\bhe'\s+d\b": "he'd",
-        r"\bshe'\s+d\b": "she'd",
-        r"\bit'\s+d\b": "it'd",
-        r"\bwe'\s+d\b": "we'd",
-        r"\bthey'\s+d\b": "they'd",
-    }
+    # 使用通用的正则表达式模式来捕获所有可能的缩写形式
+    # 这比逐个列举更加全面和可靠
     
-    # 逐个应用修复
-    fixed_text = text
-    for pattern, replacement in contractions.items():
-        fixed_text = re.sub(pattern, replacement, fixed_text, flags=re.IGNORECASE)
+    # 第一步：修复基本的单引号+空格+字母模式
+    # 匹配：单词边界 + 单引号 + 一个或多个空白字符 + 1-3个字母 + 单词边界
+    text = re.sub(r"\b(\w+)'\s+([a-zA-Z]{1,3})\b", r"\1'\2", text)
     
-    return fixed_text
+    # 第二步：处理其他可能的空白字符（制表符、不间断空格等）
+    text = re.sub(r"\b(\w+)'[\s\u00A0\u2000-\u200B\u2028\u2029]+([a-zA-Z]{1,3})\b", r"\1'\2", text)
+    
+    # 第三步：处理特殊的不规则缩写形式，保持原有大小写
+    def replace_preserving_case(match, target_contraction):
+        """保持原有大小写的替换函数"""
+        original = match.group(0)
+        
+        # 检查原文的大小写模式
+        if original[0].isupper():
+            # 句首大写
+            return target_contraction.capitalize()
+        elif original.isupper():
+            # 全大写
+            return target_contraction.upper()
+        else:
+            # 小写
+            return target_contraction.lower()
+    
+    # 处理不规则缩写（需要特殊处理的）
+    irregular_patterns = [
+        (r"\b(won)'\s*(t)\b", "won't"),      # will not → won't
+        (r"\b(can)'\s*(t)\b", "can't"),      # cannot → can't
+        (r"\b(shan)'\s*(t)\b", "shan't"),    # shall not → shan't
+    ]
+    
+    for pattern, target in irregular_patterns:
+        def replacer(match):
+            return replace_preserving_case(match, target)
+        text = re.sub(pattern, replacer, text, flags=re.IGNORECASE)
+    
+    return text
 
 
 def clean_text(text: str) -> str:
@@ -1259,7 +1222,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
         # 单行标题，使用原来的方式
         safe_line = sanitize_drawtext_text(lines[0])
         drawtext_filter = (
-            f"drawtext="
+            f"[input]drawtext="
             f"fontfile='{safe_fontfile}':"
             f"text='{safe_line}':"
             f"fontcolor=#FF6600:"
@@ -1268,7 +1231,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
             f"boxcolor=black@0.45:"
             f"boxborderw=20:"
             f"x=(w-text_w)/2:"
-            f"y={base_y}"
+            f"y={base_y}[title1];"
         )
         return drawtext_filter, "[title1]"
     
