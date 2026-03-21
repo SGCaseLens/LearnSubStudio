@@ -43,6 +43,7 @@ SAFE_AREA_BOTTOM = 280   # 底部安全距离：避开操作按钮、评论区
 SAFE_AREA_SIDE = 60      # 左右安全距离：避开边缘裁切
 
 # 短视频布局区域定义
+CHAPTER_SAFE_Y = SAFE_AREA_TOP - 10      # 章节安全位置：150px（在标题上方）
 TITLE_SAFE_Y = SAFE_AREA_TOP + 40        # 标题安全位置：200px
 SUMMARY_SAFE_Y = SAFE_AREA_TOP + 120     # 摘要安全位置：280px  
 HISTORY_SAFE_TOP = SAFE_AREA_TOP + 200   # 历史区域顶部：360px
@@ -1887,7 +1888,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
             f"box=1:"
             f"boxcolor=black@0.45:"
             f"boxborderw=20:"
-            f"x=(w-text_w)/2:"
+            f"x=60:"
             f"y={base_y}[title1];"
         )
         return drawtext_filter, "[title1]"
@@ -1915,7 +1916,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
             f"text='{safe_line}':"
             f"fontcolor=#FF6600:"
             f"fontsize=40:"
-            f"x=(w-text_w)/2:"
+            f"x=60:"
             f"y={y_pos}"
         )
         
@@ -1996,7 +1997,7 @@ YCbCr Matrix: TV.601
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
 Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
-Style: Chapter,{ASS_FONT_NAME},34,&H00FFFFFF,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,8,60,60,500,1
+Style: Chapter,{ASS_FONT_NAME},28,&H00FFAA66,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,7,60,60,1770,1
 Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
 Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
 
@@ -2011,7 +2012,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             # 应用片头时间偏移
             adjusted_start = start + intro_offset
             adjusted_end = end + intro_offset
-            line = f"Dialogue: 0,{ass_time(adjusted_start)},{ass_time(adjusted_end)},Chapter,,0,0,0,,{ass_escape_text(title)}\n"
+            # 📋 章节格式：Chapter: [章节标题]，显示在标题上方左对齐
+            chapter_text = f"Chapter: {title}"
+            line = f"Dialogue: 0,{ass_time(adjusted_start)},{ass_time(adjusted_end)},Chapter,,0,0,0,,{ass_escape_text(chapter_text)}\n"
             f.write(line)
 
         history_center_x = VIDEO_W // 2
@@ -2447,7 +2450,7 @@ def build_video(
             f"box=1:"
             f"boxcolor=black@0.30:"
             f"boxborderw=12:"
-            f"x=(w-text_w)/2:"
+            f"x=60:"
             f"y={SUMMARY_SAFE_Y}[tmp3];"  # 摘要安全区位置
         )
         ass_input = "[tmp3]"
