@@ -659,6 +659,97 @@ def split_for_karaoke(text: str) -> List[str]:
     return tokens
 
 
+def analyze_emotion_and_sentiment(text: str) -> dict:
+    """
+    情感分析：分析文本的情绪、语调和重要性
+    返回情绪分析结果
+    """
+    text_lower = text.lower().strip()
+    
+    # 情绪词汇库
+    emotions = {
+        'excitement': {
+            'words': ['amazing', 'incredible', 'fantastic', 'wonderful', 'awesome', 'brilliant', 
+                     'outstanding', 'spectacular', 'magnificent', 'extraordinary', 'phenomenal',
+                     'thrilling', 'exciting', 'wow', 'unbelievable', 'stunning', 'breathtaking'],
+            'intensity': 0.9
+        },
+        'surprise': {
+            'words': ['surprising', 'shocked', 'unexpected', 'suddenly', 'whoa', 'omg', 
+                     'can\'t believe', 'never thought', 'who knew', 'turns out', 'guess what'],
+            'intensity': 0.8
+        },
+        'curiosity': {
+            'words': ['interesting', 'fascinating', 'intriguing', 'wonder', 'curious', 'mystery',
+                     'secret', 'hidden', 'behind', 'what if', 'imagine', 'think about'],
+            'intensity': 0.7
+        },
+        'urgency': {
+            'words': ['important', 'crucial', 'critical', 'must', 'need to', 'immediately',
+                     'right now', 'asap', 'urgent', 'don\'t miss', 'limited time', 'act now'],
+            'intensity': 0.8
+        },
+        'achievement': {
+            'words': ['success', 'achieved', 'accomplished', 'mastered', 'learned', 'completed',
+                     'finished', 'done', 'got it', 'nailed it', 'perfect', 'excellent'],
+            'intensity': 0.7
+        }
+    }
+    
+    # 语调分析
+    tone_analysis = {
+        'question': '?' in text or any(text_lower.startswith(q) for q in 
+                    ['what', 'how', 'why', 'when', 'where', 'who', 'which', 'can', 'could', 'would', 'should', 'do', 'does', 'did', 'is', 'are', 'was', 'were']),
+        'exclamation': '!' in text or text_lower.endswith('!'),
+        'emphasis': text.isupper() or '**' in text or '*' in text,
+        'list_item': text_lower.strip().startswith(('1.', '2.', '3.', '•', '-', '*')) or 
+                    any(word in text_lower for word in ['first', 'second', 'third', 'next', 'finally']),
+    }
+    
+    # 重要性分析
+    importance_indicators = {
+        'high': ['key', 'important', 'crucial', 'essential', 'vital', 'critical', 'fundamental', 
+                'core', 'main', 'primary', 'remember', 'note', 'pay attention'],
+        'technical': ['algorithm', 'function', 'method', 'process', 'system', 'model', 'framework',
+                     'api', 'code', 'programming', 'data', 'database', 'server', 'network'],
+        'number_fact': bool(re.search(r'\d+[%$£€¥]?|\b\d{4}\b', text))  # 包含数字或年份
+    }
+    
+    # 检测主要情绪
+    detected_emotions = []
+    max_intensity = 0
+    primary_emotion = 'neutral'
+    
+    for emotion, data in emotions.items():
+        for word in data['words']:
+            if word in text_lower:
+                detected_emotions.append(emotion)
+                if data['intensity'] > max_intensity:
+                    max_intensity = data['intensity']
+                    primary_emotion = emotion
+                break
+    
+    # 检测重要性级别
+    importance = 'normal'
+    for level, indicators in importance_indicators.items():
+        if level == 'number_fact':
+            if indicators:
+                importance = 'high'
+                break
+        else:
+            if any(indicator in text_lower for indicator in indicators):
+                importance = 'high' if level == 'high' else 'medium'
+                break
+    
+    return {
+        'primary_emotion': primary_emotion,
+        'emotions': detected_emotions,
+        'intensity': max_intensity,
+        'tone': tone_analysis,
+        'importance': importance,
+        'length': len(text.split())
+    }
+
 def classify_word_type(word: str) -> str:
     """
     根据词汇特征分类，返回词汇类型
@@ -780,14 +871,127 @@ def classify_word_type(word: str) -> str:
     return 'default'
 
 
+def get_emotion_visual_effects(emotion_data: dict, word_type: str) -> str:
+    """
+    🎨 情绪驱动的视觉系统 - 根据情感分析生成动态视觉效果
+    返回包含颜色、缩放、闪烁等效果的ASS样式代码
+    """
+    primary_emotion = emotion_data['primary_emotion']
+    intensity = emotion_data['intensity']
+    tone = emotion_data['tone']
+    importance = emotion_data['importance']
+    
+    # 情绪颜色映射（BGR格式，针对深色背景优化）
+    emotion_colors = {
+        'excitement': '&H0000FFFF&',    # 金黄色 - 兴奋激动
+        'surprise': '&H00FF8C00&',      # 亮橙色 - 惊讶震撼  
+        'curiosity': '&H00FF6B47&',     # 蓝橙色 - 好奇探索
+        'urgency': '&H000080FF&',       # 红色 - 紧急重要
+        'achievement': '&H0066FF66&',   # 绿色 - 成就完成
+        'neutral': '&H00FFFFFF&',       # 白色 - 中性默认
+    }
+    
+    # 词汇类型颜色（保持现有系统兼容）
+    word_type_colors = {
+        'person': '&H005599FF&',    # 人名：亮蓝色
+        'brand': '&H0000FFFF&',     # 品牌：亮黄色  
+        'number': '&H0066FF66&',    # 数字：亮绿色
+        'verb': '&H00FF66FF&',      # 动词：亮紫色
+        'tech': '&H00FF9900&',      # 技术：橙色
+        'default': '&H0099CCFF&'    # 默认：浅橙色
+    }
+    
+    # 基础颜色选择（优先情绪，其次词汇类型）
+    if primary_emotion != 'neutral':
+        base_color = emotion_colors[primary_emotion]
+    else:
+        base_color = word_type_colors.get(word_type, word_type_colors['default'])
+    
+    effects = []
+    
+    # 🔥 兴奋激动效果 - 金色闪烁
+    if primary_emotion == 'excitement':
+        if intensity > 0.8:
+            # 强烈兴奋：金色闪烁 + 轻微放大
+            effects.append(rf"\c{base_color}")
+            effects.append(r"\fscx110\fscy110")  # 放大10%
+            # 简化的闪烁效果（通过颜色变化）
+            effects.append(r"\t(0,200,\c&H00FFFF00&)\t(200,400,\c" + base_color + ")")
+        else:
+            # 中等兴奋：金色高亮
+            effects.append(rf"\c{base_color}")
+            effects.append(r"\fscx105\fscy105")  # 轻微放大5%
+    
+    # 🎯 惊讶震撼效果 - 橙色爆发
+    elif primary_emotion == 'surprise':
+        effects.append(rf"\c{base_color}")
+        effects.append(r"\fscx115\fscy115")  # 放大15%
+        # 添加粗体强调
+        effects.append(r"\b1")
+    
+    # 🔍 好奇探索效果 - 蓝色波动
+    elif primary_emotion == 'curiosity':
+        effects.append(rf"\c{base_color}")
+        effects.append(r"\fscx108\fscy108")  # 放大8%
+        # 添加斜体效果，营造探索感
+        effects.append(r"\i1")
+    
+    # ⚡ 紧急重要效果 - 红色警告
+    elif primary_emotion == 'urgency':
+        effects.append(rf"\c{base_color}")
+        effects.append(r"\fscx112\fscy112")  # 放大12%
+        effects.append(r"\b1")  # 粗体
+        # 红色闪烁效果
+        effects.append(r"\t(0,150,\c&H000080FF&)\t(150,300,\c" + base_color + ")")
+    
+    # 🏆 成就完成效果 - 绿色荣耀
+    elif primary_emotion == 'achievement':
+        effects.append(rf"\c{base_color}")
+        effects.append(r"\fscx107\fscy107")  # 放大7%
+        effects.append(r"\b1")  # 粗体强调成就感
+    
+    # 📊 重要性级别视觉增强
+    if importance == 'high':
+        if not any('fscx' in effect for effect in effects):
+            effects.append(r"\fscx110\fscy110")  # 重要内容放大10%
+        if not any(r'\b' in effect for effect in effects):
+            effects.append(r"\b1")  # 重要内容加粗
+    elif importance == 'medium':
+        if not any('fscx' in effect for effect in effects):
+            effects.append(r"\fscx105\fscy105")  # 中等重要内容放大5%
+    
+    # 🎵 语调视觉化
+    if tone['question']:
+        # 疑问句：添加向上箭头效果（通过位置微调模拟）
+        effects.append(r"\move(0,0,0,-2)")  # 轻微上移2像素
+    elif tone['exclamation']:
+        # 感叹句：添加强调效果
+        if not any(r'\b' in effect for effect in effects):
+            effects.append(r"\b1")  # 感叹加粗
+    elif tone['emphasis']:
+        # 强调文本：全大写或特殊标记
+        effects.append(r"\b1\i1")  # 粗体+斜体双重强调
+    
+    # 🔢 数字和列表项特殊处理
+    if tone['list_item']:
+        # 列表项：添加结构化视觉提示
+        if not any('c&H' in effect for effect in effects):
+            effects.append(r"\c&H0066FF66&")  # 列表项用绿色
+    
+    # 如果没有特殊效果，返回基础颜色
+    if not effects:
+        return rf"\c{base_color}"
+    
+    return "".join(effects)
+
 def get_highlight_color(word_type: str) -> str:
     """
-    根据词汇类型返回对应的ASS颜色代码（BGR格式）
-    颜色经过优化，在深色背景上有优秀的对比度和可读性
+    兼容性函数：根据词汇类型返回对应的ASS颜色代码（BGR格式）
+    此函数保持向后兼容，新的情绪系统使用get_emotion_visual_effects
     """
     color_map = {
         'person': '&H005599FF&',    # 人名：亮蓝色 - 专业感，代表人物
-        'brand': '&H0000FFFF&',     # 品牌：亮黄色 - 醒目，代表商业品牌  
+        'brand': '&H0000FFFF&',     # 品牌：亮黄色 - 醒目，代表商业品牌
         'number': '&H0066FF66&',    # 数字：亮绿色 - 清晰，代表数据
         'verb': '&H00FF66FF&',      # 核心动词：亮紫色 - 动感，代表行为
         'tech': '&H00FF9900&',      # 技术词汇：橙色 - 创新感，代表科技
@@ -823,6 +1027,7 @@ def build_karaoke_en_line(
     duration_sec: float,
     keywords: List[str] | None = None,
     max_units: float = 32.0,
+    emotion_boost: bool = False,
 ) -> str:
     en_text = clean_text(en_text)
     # 确保英文单词之间有正确的空格
@@ -867,15 +1072,35 @@ def build_karaoke_en_line(
             raw = tok.strip(" ,.!?;:\"'()[]{}").lower()
             dur = per_token + (1 if visible_idx < remainder else 0)
             
-            # 智能分类高亮：根据词汇类型使用不同颜色
+            # 🎨 情绪驱动的视觉系统
             word_type = classify_word_type(tok.strip())
             
-            # 如果是关键词或特殊类型，使用对应颜色高亮
-            if raw in keyword_set or word_type != 'default':
-                color_code = get_highlight_color(word_type)
-                piece = rf"{{\kf{dur}\c{color_code}}}{escaped}{{\c}}"
+            # 如果启用情绪增强模式
+            if emotion_boost:
+                # 对整个句子进行情感分析
+                emotion_data = analyze_emotion_and_sentiment(en_text)
+                # 对当前词汇进行情感分析（更精确）
+                word_emotion_data = analyze_emotion_and_sentiment(tok.strip())
+                
+                # 使用更强烈的情绪数据
+                if word_emotion_data['primary_emotion'] != 'neutral':
+                    final_emotion_data = word_emotion_data
+                else:
+                    final_emotion_data = emotion_data
+                
+                # 生成情绪驱动的视觉效果
+                if raw in keyword_set or word_type != 'default' or final_emotion_data['primary_emotion'] != 'neutral':
+                    visual_effects = get_emotion_visual_effects(final_emotion_data, word_type)
+                    piece = rf"{{\kf{dur}{visual_effects}}}{escaped}{{\r}}"
+                else:
+                    piece = rf"{{\kf{dur}}}{escaped}"
             else:
-                piece = rf"{{\kf{dur}}}{escaped}"
+                # 传统的智能分类高亮
+                if raw in keyword_set or word_type != 'default':
+                    color_code = get_highlight_color(word_type)
+                    piece = rf"{{\kf{dur}\c{color_code}}}{escaped}{{\c}}"
+                else:
+                    piece = rf"{{\kf{dur}}}{escaped}"
             parts.append(piece)
             visible_idx += 1
         else:
@@ -895,6 +1120,7 @@ def build_bilingual_karaoke_ass_text(
     keywords: List[str] | None = None,
     max_units_en: float = 32.0,
     max_units_zh: float = 24.0,
+    emotion_boost: bool = False,
 ) -> tuple[str, str]:
     """
     构建分层双语字幕：返回(英文字幕, 中文字幕)
@@ -907,6 +1133,7 @@ def build_bilingual_karaoke_ass_text(
         duration_sec=duration_sec,
         keywords=keywords,
         max_units=max_units_en,
+        emotion_boost=emotion_boost,
     )
 
     # 构建辅助的中文字幕（更柔和，不抢夺注意力）
@@ -1406,6 +1633,7 @@ def write_ass_karaoke(
     show_bars: bool,
     intro_offset: float = 0.0,
     subtitle_end_time: float = None,  # 字幕结束时间，用于片尾效果
+    emotion_boost: bool = False,  # 🎨 情绪驱动视觉系统
 ) -> None:
     # 字幕层级设计：英文突出，中文辅助（短视频安全区）
     english_fontsize = 44      # 英文字体大小，避免超出边界（减小到44px）
@@ -1532,6 +1760,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 keywords=keywords,
                 max_units_en=32.0,  # 与历史字幕宽度保持一致
                 max_units_zh=24.0,  # 与历史字幕宽度保持一致
+                emotion_boost=emotion_boost,  # 🎨 情绪驱动视觉系统
             )
             
             # 英文字幕：Layer 3, EnglishMain样式，更突出，主要位置
@@ -2085,7 +2314,7 @@ def main() -> None:
   python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM"
 
   # 友好的命名参数方式（推荐）
-  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --show-source
+  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --show-source --emotion-boost
 
   # 自定义封面和摘要
   python build_from_video_id.py QqeECC13HcM --query "tech background" --cover my_cover.jpg --summary "深度学习教程"
@@ -2150,6 +2379,10 @@ def main() -> None:
     parser.add_argument('--show-source',
                        action='store_true',
                        help='在视频底部显示YouTube来源链接 (默认: false)')
+    
+    parser.add_argument('--emotion-boost',
+                       action='store_true',
+                       help='🎨 启用情绪驱动视觉系统：智能识别情感并添加动态视觉效果 (默认: false)')
 
     # 输出设置
     parser.add_argument('--output', '--out',
@@ -2214,6 +2447,7 @@ def main() -> None:
             show_intro = parse_bool_arg(sys.argv[6]) if len(sys.argv) >= 7 else False
             show_outro = parse_bool_arg(sys.argv[8]) if len(sys.argv) >= 9 else True
             show_source = False  # 旧格式不支持显示来源
+            emotion_boost = False  # 旧格式不支持情绪增强
             output_path = ''  # 旧格式不支持自定义输出路径
             keep_temp = False  # 旧格式默认清理中间文件
         else:
@@ -2239,6 +2473,7 @@ def main() -> None:
             show_intro = args.show_intro
             show_outro = not args.no_outro  # 默认true，除非显式关闭
             show_source = args.show_source  # 是否显示视频来源
+            emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
             output_path = args.output.strip() if args.output else ''
             keep_temp = args.keep_temp
             
@@ -2272,6 +2507,7 @@ def main() -> None:
         show_intro = args.show_intro
         show_outro = not args.no_outro
         show_source = args.show_source  # 是否显示视频来源
+        emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
         output_path = args.output.strip() if args.output else ''
         keep_temp = args.keep_temp
         
@@ -2343,7 +2579,7 @@ def main() -> None:
     # 如果启用片头，字幕需要延后显示
     intro_offset_time = 1.5 if show_intro else 0.0  # 片头时长1.5秒
     # 先用None作为subtitle_end_time，在音频下载后重新生成字幕
-    write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars, intro_offset=intro_offset_time, subtitle_end_time=None)
+    write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost)
 
     english_items_for_text = [
         {
@@ -2416,7 +2652,7 @@ def main() -> None:
     # 如果智能检测结果与初始设置不同，需要重新生成字幕文件
     if show_bars_final != show_bars:
         print(f"   🔄 智能检测结果与初始设置不同，重新生成字幕文件...")
-        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=None)
+        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost)
     end_step("智能音频分析")
 
     print("7/8 优化字幕时间...")
@@ -2441,7 +2677,7 @@ def main() -> None:
         subtitle_end_time = audio_duration + intro_offset_time
         
         # 重新生成字幕文件，这次带有准确的结束时间
-        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=subtitle_end_time)
+        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=subtitle_end_time, emotion_boost=emotion_boost)
         print(f"   字幕将在 {subtitle_end_time:.1f}秒 时停止显示，然后播放2秒片尾")
     else:
         print("   跳过片尾时间优化（片尾效果未启用）")
