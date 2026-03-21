@@ -13,6 +13,7 @@
 - 🎤 **卡拉OK效果**: 生成带有时间同步的卡拉OK风格字幕
 - 🎯 **智能多色高亮**: 根据词汇类型使用不同颜色 - 人名蓝色、品牌黄色、数字绿色、动词紫色、科技橙色
 - 📊 **分层字幕设计**: 英文主焦点(44px)在上方，中文辅助理解(38px橙色)在下方，层次清晰更舒适
+- 🔗 **可选来源标识**: 可在视频底部显示YouTube来源链接，便于追溯和合规标注
 - 📊 **智能渐变频谱**: 自动识别内容类型，音乐类启用精美渐变色，讲话类关闭避免干扰
 - 📄 **可选摘要**: 支持自定义摘要，默认无摘要，简洁高效
 - 🎬 **可选片头**: 1.5秒精美片头，默认不显示，用户可选启用
@@ -321,6 +322,7 @@ python build_from_video_id.py VIDEO_ID_OR_URL [选项]
 - `--show-intro, -i`: 显示1.5秒片头效果
 - `--show-outro, -o`: 显示2秒优雅片尾（默认开启）
 - `--no-outro`: 关闭片尾效果
+- `--show-source`: 在视频底部显示YouTube来源链接（默认关闭）
 - `--output, --out`: 指定输出MP4文件路径（默认：当前目录）
 - `--keep-temp`: 保留中间文件 (.mp3, .txt, .ass等)
 - `--clean-temp`: 强制清理中间文件（默认行为）
@@ -375,7 +377,8 @@ python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM" \
   --summary "学习AI技术：从基础到实践" \
   --show-bars \
   --show-intro \
-  --show-outro
+  --show-outro \
+  --show-source
 ```
 
 #### 新旧对比
@@ -388,7 +391,7 @@ python build_from_video_id.py QqeECC13HcM "tech" cover.jpg true "学习AI技术"
 
 **✅ 新方式（清晰明了）：**
 ```bash
-python build_from_video_id.py QqeECC13HcM --query tech --cover cover.jpg --show-bars --summary "学习AI技术" --show-intro --show-outro
+python build_from_video_id.py QqeECC13HcM --query tech --cover cover.jpg --show-bars --summary "学习AI技术" --show-intro --show-outro --show-source
 # 每个参数都有明确含义！
 ```
 

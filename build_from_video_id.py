@@ -1765,6 +1765,8 @@ def build_video(
     content_type: str = 'mixed',
     intro_duration: float = 1.5,
     outro_duration: float = 2.0,
+    show_source: bool = False,  # 是否显示视频来源
+    video_id: str = "",  # 视频ID，用于构建来源URL
 ) -> None:
     wrapped_title = wrap_title_for_mobile(video_title, max_units_per_line=30.0, max_lines=3)  # 40号字体支持更长标题，确保完整显示
     safe_title = sanitize_drawtext_text(wrapped_title)
@@ -1906,14 +1908,35 @@ def build_video(
             f"[intro_added]ass='{safe_ass}'[subtitled];"
             
             # 只添加淡入效果，不添加全画面淡出（片尾保留背景和标题）
-            f"[subtitled]fade=t=in:st=0:d=0.5[v]"
+            f"[subtitled]fade=t=in:st=0:d=0.5[faded]"
         )
     else:
         # 无片头：直接显示字幕，片尾保留背景和标题
         filter_complex += (
             f"{ass_input}ass='{safe_ass}'[subtitled];"
-            f"[subtitled]fade=t=in:st=0:d={intro_duration}[v]"
+            f"[subtitled]fade=t=in:st=0:d={intro_duration}[faded]"
         )
+    
+    # 添加视频来源显示（可选）
+    if show_source and video_id:
+        source_url = f"source: https://www.youtube.com/watch?v={video_id}"
+        safe_source_text = sanitize_drawtext_text(source_url)
+        
+        # 在最底部显示来源，位置在安全区内
+        source_y = VIDEO_H - 50  # 距离底部50像素
+        
+        filter_complex += (
+            f";[faded]drawtext="
+            f"fontfile='{safe_fontfile}':"
+            f"text='{safe_source_text}':"
+            f"fontcolor=#CCCCCC:"  # 灰色文字，不太突出
+            f"fontsize=20:"
+            f"x=(w-text_w)/2:"  # 居中对齐
+            f"y={source_y}[v]"
+        )
+    else:
+        # 不显示来源，直接重命名输出
+        filter_complex += ";[faded]null[v]"
 
     # 检测最佳编码参数
     print("🚀 优化编码参数...")
@@ -2062,7 +2085,7 @@ def main() -> None:
   python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM"
 
   # 友好的命名参数方式（推荐）
-  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro
+  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --show-source
 
   # 自定义封面和摘要
   python build_from_video_id.py QqeECC13HcM --query "tech background" --cover my_cover.jpg --summary "深度学习教程"
@@ -2124,6 +2147,10 @@ def main() -> None:
                        action='store_true',
                        help='显示2秒优雅片尾效果 (默认: true)')
     
+    parser.add_argument('--show-source',
+                       action='store_true',
+                       help='在视频底部显示YouTube来源链接 (默认: false)')
+
     # 输出设置
     parser.add_argument('--output', '--out',
                        default='',
@@ -2186,6 +2213,7 @@ def main() -> None:
             custom_summary = sys.argv[5].strip() if len(sys.argv) >= 6 else ""
             show_intro = parse_bool_arg(sys.argv[6]) if len(sys.argv) >= 7 else False
             show_outro = parse_bool_arg(sys.argv[8]) if len(sys.argv) >= 9 else True
+            show_source = False  # 旧格式不支持显示来源
             output_path = ''  # 旧格式不支持自定义输出路径
             keep_temp = False  # 旧格式默认清理中间文件
         else:
@@ -2210,6 +2238,7 @@ def main() -> None:
             custom_summary = args.summary
             show_intro = args.show_intro
             show_outro = not args.no_outro  # 默认true，除非显式关闭
+            show_source = args.show_source  # 是否显示视频来源
             output_path = args.output.strip() if args.output else ''
             keep_temp = args.keep_temp
             
@@ -2242,6 +2271,7 @@ def main() -> None:
         custom_summary = args.summary
         show_intro = args.show_intro
         show_outro = not args.no_outro
+        show_source = args.show_source  # 是否显示视频来源
         output_path = args.output.strip() if args.output else ''
         keep_temp = args.keep_temp
         
@@ -2436,6 +2466,8 @@ def main() -> None:
         show_intro=show_intro,
         show_outro=show_outro,
         content_type=content_type,
+        show_source=show_source,
+        video_id=video_id,
     )
     
     # 计算编码速度（如果有视频时长信息）
