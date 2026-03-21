@@ -1888,7 +1888,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
             f"box=1:"
             f"boxcolor=black@0.45:"
             f"boxborderw=20:"
-            f"x=60:"
+            f"x=(w-text_w)/2:"
             f"y={base_y}[title1];"
         )
         return drawtext_filter, "[title1]"
@@ -1916,7 +1916,7 @@ def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, bas
             f"text='{safe_line}':"
             f"fontcolor=#FF6600:"
             f"fontsize=40:"
-            f"x=60:"
+            f"x=(w-text_w)/2:"
             f"y={y_pos}"
         )
         
@@ -1997,7 +1997,7 @@ YCbCr Matrix: TV.601
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: EnglishMain,{ASS_FONT_NAME},{english_fontsize},&H00FFFFFF,&H000080FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,80,80,{english_margin_v},1
 Style: ChineseAux,{ASS_FONT_NAME},{chinese_fontsize},&H000066FF,&H00808080,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,2,1,2,80,80,{chinese_margin_v},1
-Style: Chapter,{ASS_FONT_NAME},28,&H00FFAA66,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,7,60,60,1770,1
+Style: Chapter,{ASS_FONT_NAME},28,&H00FFAA66,&H000080FF,&H00000000,&H60000000,1,0,0,0,100,100,0,0,1,2,1,2,80,80,1770,1
 Style: HistoryEn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00C0C0C0,&H00000000,&H70000000,0,0,0,0,100,100,0,0,1,2.5,1,8,80,80,0,1
 Style: HistoryCn,{ASS_FONT_NAME},{english_fontsize-6},&H000066FF,&H00707070,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1.5,0.5,8,80,80,0,1
 
@@ -2450,7 +2450,7 @@ def build_video(
             f"box=1:"
             f"boxcolor=black@0.30:"
             f"boxborderw=12:"
-            f"x=60:"
+            f"x=(w-text_w)/2:"
             f"y={SUMMARY_SAFE_Y}[tmp3];"  # 摘要安全区位置
         )
         ass_input = "[tmp3]"
