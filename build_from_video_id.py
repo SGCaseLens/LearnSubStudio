@@ -50,6 +50,124 @@ HISTORY_SAFE_BOTTOM = VIDEO_H - SAFE_AREA_BOTTOM - 380  # 历史区域底部：1
 SPECTRUM_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 440     # 频谱安全位置：1200px
 SUBTITLE_SAFE_Y = VIDEO_H - SAFE_AREA_BOTTOM - 120     # 字幕安全位置：1520px
 
+# 📱 平台定制配置 - 针对不同短视频平台的视觉优化
+PLATFORM_CONFIGS = {
+    'xiaohongshu': {
+        'name': '小红书',
+        'description': '清新文艺风格，适合生活化学习内容',
+        'colors': {
+            'primary': '&H00FF6B6B&',      # 小红书红：温暖亲和
+            'secondary': '&H00FFB347&',    # 暖橙色：活力青春
+            'accent': '&H004ECDC4&',       # 薄荷绿：清新自然
+            'background': '&H00F8F8F8&',   # 浅灰背景：简约干净
+            'text': '&H00333333&',         # 深灰文字：温和易读
+        },
+        'font_style': {
+            'main_weight': 'normal',        # 非粗体：柔和亲切
+            'accent_italic': True,          # 斜体强调：手写感
+            'rounded_corners': True,        # 圆角效果：可爱风格
+        },
+        'visual_elements': {
+            'soft_shadows': True,           # 柔和阴影：质感提升
+            'pastel_highlights': True,      # 马卡龙色彩：梦幻感
+            'handwriting_style': True,      # 手写风格：个人化
+        },
+        'content_tone': '生活化、亲切、实用'
+    },
+    
+    'tiktok': {
+        'name': 'TikTok',
+        'description': '年轻动感风格，适合快节奏学习内容',
+        'colors': {
+            'primary': '&H00FF0050&',      # TikTok粉：年轻活力
+            'secondary': '&H0000F5FF&',    # 霓虹黄：时尚潮流
+            'accent': '&H00FF6EC7&',       # 亮紫色：个性张扬
+            'background': '&H00000000&',   # 纯黑背景：对比强烈
+            'text': '&H00FFFFFF&',         # 纯白文字：清晰醒目
+        },
+        'font_style': {
+            'main_weight': 'bold',          # 粗体：强烈冲击
+            'accent_italic': False,         # 直体：干净利落
+            'rounded_corners': False,       # 直角：锐利现代
+        },
+        'visual_elements': {
+            'neon_glow': True,              # 霓虹发光：科技感
+            'pulse_animation': True,        # 脉冲动画：动态节奏
+            'gradient_text': True,          # 渐变文字：时尚效果
+        },
+        'content_tone': '快节奏、年轻化、国际范'
+    },
+    
+    'douyin': {
+        'name': '抖音',
+        'description': '本土化风格，适合中文学习内容',
+        'colors': {
+            'primary': '&H000080FF&',      # 抖音红：热情奔放
+            'secondary': '&H0000CCFF&',    # 金橙色：温暖亲民
+            'accent': '&H00FF6600&',       # 活力橙：积极向上
+            'background': '&H001a1a1a&',   # 深灰背景：沉稳大气
+            'text': '&H00FFFFFF&',         # 白色文字：清晰明亮
+        },
+        'font_style': {
+            'main_weight': 'bold',          # 粗体：强调重点
+            'accent_italic': False,         # 直体：正式规范
+            'rounded_corners': True,        # 圆角：友好亲切
+        },
+        'visual_elements': {
+            'chinese_elements': True,       # 中国风元素：文化认同
+            'warm_lighting': True,          # 暖色调：温馨感
+            'traditional_accent': True,     # 传统装饰：文化底蕴
+        },
+        'content_tone': '接地气、实用性、中国特色'
+    },
+    
+    'instagram': {
+        'name': 'Instagram',
+        'description': '高端质感风格，适合精品学习内容',
+        'colors': {
+            'primary': '&H00E1306C&',      # Instagram紫：优雅神秘
+            'secondary': '&H00405DE6&',    # 蓝紫色：高级质感
+            'accent': '&H00FFDC80&',       # 香槟金：奢华品质
+            'background': '&H00F5F5F5&',   # 高级灰：简约高端
+            'text': '&H002C2C2C&',         # 炭黑色：专业严谨
+        },
+        'font_style': {
+            'main_weight': 'medium',        # 中等粗细：平衡美感
+            'accent_italic': True,          # 斜体：艺术气息
+            'rounded_corners': False,       # 直角：现代简约
+        },
+        'visual_elements': {
+            'minimal_design': True,         # 极简设计：高级感
+            'subtle_gradients': True,       # 微妙渐变：层次丰富
+            'professional_layout': True,    # 专业布局：商务范
+        },
+        'content_tone': '高质量、国际化、专业性'
+    },
+    
+    'universal': {
+        'name': '通用',
+        'description': '平衡各平台特点的通用风格',
+        'colors': {
+            'primary': '&H00FF9900&',      # 通用橙：活力友好
+            'secondary': '&H0066CCFF&',    # 蓝色：专业可信
+            'accent': '&H0099FF66&',       # 绿色：清新积极
+            'background': '&H00F0F0F0&',   # 中性灰：适应性强
+            'text': '&H00444444&',         # 深灰：可读性佳
+        },
+        'font_style': {
+            'main_weight': 'normal',        # 标准粗细：通用性好
+            'accent_italic': False,         # 直体：兼容性强
+            'rounded_corners': True,        # 圆角：友好通用
+        },
+        'visual_elements': {
+            'balanced_design': True,        # 平衡设计：适应各平台
+            'cross_platform': True,        # 跨平台优化：兼容性
+            'flexible_layout': True,       # 灵活布局：适应性强
+        },
+        'content_tone': '平衡、通用、适应性强'
+    }
+}
+
 DEFAULT_LIBRETRANSLATE_ENDPOINT = os.environ.get(
     "LIBRETRANSLATE_ENDPOINT",
     "http://127.0.0.1:5000/translate",
@@ -659,6 +777,71 @@ def split_for_karaoke(text: str) -> List[str]:
     return tokens
 
 
+def get_platform_config(platform: str = 'universal') -> dict:
+    """
+    📱 获取指定平台的配置信息
+    支持: xiaohongshu, tiktok, douyin, instagram, universal
+    """
+    return PLATFORM_CONFIGS.get(platform.lower(), PLATFORM_CONFIGS['universal'])
+
+def apply_platform_styling(base_color: str, platform: str = 'universal', element_type: str = 'primary') -> str:
+    """
+    🎨 根据平台风格调整颜色样式
+    """
+    config = get_platform_config(platform)
+    platform_colors = config['colors']
+    
+    # 根据元素类型选择对应的平台色彩
+    color_mapping = {
+        'primary': platform_colors['primary'],
+        'secondary': platform_colors['secondary'], 
+        'accent': platform_colors['accent'],
+        'text': platform_colors['text'],
+        'background': platform_colors['background'],
+    }
+    
+    return color_mapping.get(element_type, base_color)
+
+def get_platform_font_effects(platform: str = 'universal') -> str:
+    """
+    🔤 获取平台特定的字体效果
+    """
+    config = get_platform_config(platform)
+    font_style = config['font_style']
+    
+    effects = []
+    
+    # 字体粗细
+    if font_style['main_weight'] == 'bold':
+        effects.append(r'\b1')
+    elif font_style['main_weight'] == 'medium':
+        effects.append(r'\b0')  # 正常粗细
+    
+    # 斜体效果
+    if font_style.get('accent_italic', False):
+        effects.append(r'\i1')
+    
+    # 平台特殊效果
+    visual_elements = config.get('visual_elements', {})
+    
+    if platform == 'xiaohongshu':
+        # 小红书：柔和阴影效果
+        if visual_elements.get('soft_shadows'):
+            effects.append(r'\shad2')  # 轻微阴影
+    elif platform == 'tiktok':
+        # TikTok：霓虹发光效果
+        if visual_elements.get('neon_glow'):
+            effects.append(r'\3c&H000080FF&\3a&H80&')  # 边框发光
+    elif platform == 'douyin':
+        # 抖音：温暖光晕
+        if visual_elements.get('warm_lighting'):
+            effects.append(r'\shad1')  # 轻微阴影
+    elif platform == 'instagram':
+        # Instagram：极简风格，无额外效果
+        pass
+    
+    return "".join(effects)
+
 def analyze_emotion_and_sentiment(text: str) -> dict:
     """
     情感分析：分析文本的情绪、语调和重要性
@@ -871,7 +1054,7 @@ def classify_word_type(word: str) -> str:
     return 'default'
 
 
-def get_emotion_visual_effects(emotion_data: dict, word_type: str) -> str:
+def get_emotion_visual_effects(emotion_data: dict, word_type: str, platform: str = 'universal') -> str:
     """
     🎨 情绪驱动的视觉系统 - 根据情感分析生成动态视觉效果
     返回包含颜色、缩放、闪烁等效果的ASS样式代码
@@ -881,24 +1064,70 @@ def get_emotion_visual_effects(emotion_data: dict, word_type: str) -> str:
     tone = emotion_data['tone']
     importance = emotion_data['importance']
     
-    # 情绪颜色映射（BGR格式，针对深色背景优化）
-    emotion_colors = {
-        'excitement': '&H0000FFFF&',    # 金黄色 - 兴奋激动
-        'surprise': '&H00FF8C00&',      # 亮橙色 - 惊讶震撼  
-        'curiosity': '&H00FF6B47&',     # 蓝橙色 - 好奇探索
-        'urgency': '&H000080FF&',       # 红色 - 紧急重要
-        'achievement': '&H0066FF66&',   # 绿色 - 成就完成
-        'neutral': '&H00FFFFFF&',       # 白色 - 中性默认
-    }
+    # 📱 获取平台配置
+    platform_config = get_platform_config(platform)
+    platform_colors = platform_config['colors']
     
-    # 词汇类型颜色（保持现有系统兼容）
+    # 🎨 情绪颜色映射（根据平台风格调整）
+    if platform == 'xiaohongshu':
+        # 小红书：温暖清新的色彩搭配
+        emotion_colors = {
+            'excitement': platform_colors['primary'],     # 小红书红：温暖兴奋
+            'surprise': platform_colors['secondary'],     # 暖橙色：惊喜感
+            'curiosity': platform_colors['accent'],       # 薄荷绿：好奇探索
+            'urgency': '&H00FF6B6B&',                     # 温暖红：紧急但不突兀
+            'achievement': '&H0066CC99&',                 # 清新绿：成就感
+            'neutral': platform_colors['text'],           # 深灰：温和中性
+        }
+    elif platform == 'tiktok':
+        # TikTok：年轻潮流的霓虹色彩
+        emotion_colors = {
+            'excitement': platform_colors['secondary'],   # 霓虹黄：狂欢兴奋
+            'surprise': platform_colors['primary'],       # TikTok粉：惊艳震撼
+            'curiosity': platform_colors['accent'],       # 亮紫色：神秘好奇
+            'urgency': '&H000080FF&',                     # 鲜红色：紧急警告
+            'achievement': '&H0000FF80&',                 # 霓虹绿：炫酷成就
+            'neutral': platform_colors['text'],           # 纯白：清晰中性
+        }
+    elif platform == 'douyin':
+        # 抖音：热情大气的中国风色彩
+        emotion_colors = {
+            'excitement': platform_colors['secondary'],   # 金橙色：热情兴奋
+            'surprise': platform_colors['primary'],       # 抖音红：震撼惊讶
+            'curiosity': platform_colors['accent'],       # 活力橙：探索好奇
+            'urgency': platform_colors['primary'],        # 抖音红：重要紧急
+            'achievement': '&H00FF9900&',                 # 成就金：荣耀感
+            'neutral': platform_colors['text'],           # 白色：大气中性
+        }
+    elif platform == 'instagram':
+        # Instagram：高级优雅的渐变色彩
+        emotion_colors = {
+            'excitement': platform_colors['accent'],      # 香槟金：优雅兴奋
+            'surprise': platform_colors['primary'],       # Instagram紫：高级惊喜
+            'curiosity': platform_colors['secondary'],    # 蓝紫色：深度好奇
+            'urgency': '&H00D93025&',                     # 高级红：重要不失雅致
+            'achievement': '&H00228B22&',                 # 深绿色：成熟成就感
+            'neutral': platform_colors['text'],           # 炭黑：专业中性
+        }
+    else:
+        # 通用：平衡的多彩搭配
+        emotion_colors = {
+            'excitement': '&H0000FFFF&',    # 金黄色：通用兴奋
+            'surprise': '&H00FF8C00&',      # 亮橙色：通用惊讶
+            'curiosity': '&H00FF6B47&',     # 蓝橙色：通用好奇
+            'urgency': '&H000080FF&',       # 红色：通用紧急
+            'achievement': '&H0066FF66&',   # 绿色：通用成就
+            'neutral': '&H00FFFFFF&',       # 白色：通用中性
+        }
+    
+    # 词汇类型颜色（融入平台风格）
     word_type_colors = {
-        'person': '&H005599FF&',    # 人名：亮蓝色
-        'brand': '&H0000FFFF&',     # 品牌：亮黄色  
-        'number': '&H0066FF66&',    # 数字：亮绿色
-        'verb': '&H00FF66FF&',      # 动词：亮紫色
-        'tech': '&H00FF9900&',      # 技术：橙色
-        'default': '&H0099CCFF&'    # 默认：浅橙色
+        'person': apply_platform_styling('&H005599FF&', platform, 'secondary'),
+        'brand': apply_platform_styling('&H0000FFFF&', platform, 'accent'),
+        'number': apply_platform_styling('&H0066FF66&', platform, 'accent'),
+        'verb': apply_platform_styling('&H00FF66FF&', platform, 'primary'),
+        'tech': apply_platform_styling('&H00FF9900&', platform, 'primary'),
+        'default': apply_platform_styling('&H0099CCFF&', platform, 'secondary')
     }
     
     # 基础颜色选择（优先情绪，其次词汇类型）
@@ -978,9 +1207,14 @@ def get_emotion_visual_effects(emotion_data: dict, word_type: str) -> str:
         if not any('c&H' in effect for effect in effects):
             effects.append(r"\c&H0066FF66&")  # 列表项用绿色
     
-    # 如果没有特殊效果，返回基础颜色
-    if not effects:
-        return rf"\c{base_color}"
+    # 📱 添加平台特定的字体效果
+    platform_font_effects = get_platform_font_effects(platform)
+    if platform_font_effects:
+        effects.append(platform_font_effects)
+    
+    # 如果没有特殊效果，返回基础颜色 + 平台效果
+    if not effects or len(effects) == 1 and effects[0] == platform_font_effects:
+        return rf"\c{base_color}{platform_font_effects}"
     
     return "".join(effects)
 
@@ -1028,6 +1262,7 @@ def build_karaoke_en_line(
     keywords: List[str] | None = None,
     max_units: float = 32.0,
     emotion_boost: bool = False,
+    platform: str = 'universal',
 ) -> str:
     en_text = clean_text(en_text)
     # 确保英文单词之间有正确的空格
@@ -1090,7 +1325,7 @@ def build_karaoke_en_line(
                 
                 # 生成情绪驱动的视觉效果
                 if raw in keyword_set or word_type != 'default' or final_emotion_data['primary_emotion'] != 'neutral':
-                    visual_effects = get_emotion_visual_effects(final_emotion_data, word_type)
+                    visual_effects = get_emotion_visual_effects(final_emotion_data, word_type, platform)
                     piece = rf"{{\kf{dur}{visual_effects}}}{escaped}{{\r}}"
                 else:
                     piece = rf"{{\kf{dur}}}{escaped}"
@@ -1121,6 +1356,7 @@ def build_bilingual_karaoke_ass_text(
     max_units_en: float = 32.0,
     max_units_zh: float = 24.0,
     emotion_boost: bool = False,
+    platform: str = 'universal',
 ) -> tuple[str, str]:
     """
     构建分层双语字幕：返回(英文字幕, 中文字幕)
@@ -1134,6 +1370,7 @@ def build_bilingual_karaoke_ass_text(
         keywords=keywords,
         max_units=max_units_en,
         emotion_boost=emotion_boost,
+        platform=platform,
     )
 
     # 构建辅助的中文字幕（更柔和，不抢夺注意力）
@@ -1634,6 +1871,7 @@ def write_ass_karaoke(
     intro_offset: float = 0.0,
     subtitle_end_time: float = None,  # 字幕结束时间，用于片尾效果
     emotion_boost: bool = False,  # 🎨 情绪驱动视觉系统
+    platform: str = 'universal',  # 📱 平台定制优化
 ) -> None:
     # 字幕层级设计：英文突出，中文辅助（短视频安全区）
     english_fontsize = 44      # 英文字体大小，避免超出边界（减小到44px）
@@ -1761,6 +1999,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 max_units_en=32.0,  # 与历史字幕宽度保持一致
                 max_units_zh=24.0,  # 与历史字幕宽度保持一致
                 emotion_boost=emotion_boost,  # 🎨 情绪驱动视觉系统
+                platform=platform,  # 📱 平台定制优化
             )
             
             # 英文字幕：Layer 3, EnglishMain样式，更突出，主要位置
@@ -2314,7 +2553,7 @@ def main() -> None:
   python build_from_video_id.py "https://www.youtube.com/watch?v=QqeECC13HcM"
 
   # 友好的命名参数方式（推荐）
-  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --show-source --emotion-boost
+  python build_from_video_id.py QqeECC13HcM --cover tech.jpg --summary "学习AI技术" --show-intro --show-source --emotion-boost --platform xiaohongshu
 
   # 自定义封面和摘要
   python build_from_video_id.py QqeECC13HcM --query "tech background" --cover my_cover.jpg --summary "深度学习教程"
@@ -2383,6 +2622,11 @@ def main() -> None:
     parser.add_argument('--emotion-boost',
                        action='store_true',
                        help='🎨 启用情绪驱动视觉系统：智能识别情感并添加动态视觉效果 (默认: false)')
+    
+    parser.add_argument('--platform', '-p',
+                       choices=['xiaohongshu', 'tiktok', 'douyin', 'instagram', 'universal'],
+                       default='universal',
+                       help='📱 平台定制优化：xiaohongshu(小红书清新风), tiktok(年轻潮流风), douyin(本土大气风), instagram(高端质感风), universal(通用平衡风) (默认: universal)')
 
     # 输出设置
     parser.add_argument('--output', '--out',
@@ -2448,6 +2692,7 @@ def main() -> None:
             show_outro = parse_bool_arg(sys.argv[8]) if len(sys.argv) >= 9 else True
             show_source = False  # 旧格式不支持显示来源
             emotion_boost = False  # 旧格式不支持情绪增强
+            platform = 'universal'  # 旧格式使用通用平台样式
             output_path = ''  # 旧格式不支持自定义输出路径
             keep_temp = False  # 旧格式默认清理中间文件
         else:
@@ -2474,6 +2719,7 @@ def main() -> None:
             show_outro = not args.no_outro  # 默认true，除非显式关闭
             show_source = args.show_source  # 是否显示视频来源
             emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
+            platform = args.platform  # 📱 平台定制优化
             output_path = args.output.strip() if args.output else ''
             keep_temp = args.keep_temp
             
@@ -2508,6 +2754,7 @@ def main() -> None:
         show_outro = not args.no_outro
         show_source = args.show_source  # 是否显示视频来源
         emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
+        platform = args.platform  # 📱 平台定制优化
         output_path = args.output.strip() if args.output else ''
         keep_temp = args.keep_temp
         
@@ -2579,7 +2826,7 @@ def main() -> None:
     # 如果启用片头，字幕需要延后显示
     intro_offset_time = 1.5 if show_intro else 0.0  # 片头时长1.5秒
     # 先用None作为subtitle_end_time，在音频下载后重新生成字幕
-    write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost)
+    write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost, platform=platform)
 
     english_items_for_text = [
         {
@@ -2652,7 +2899,7 @@ def main() -> None:
     # 如果智能检测结果与初始设置不同，需要重新生成字幕文件
     if show_bars_final != show_bars:
         print(f"   🔄 智能检测结果与初始设置不同，重新生成字幕文件...")
-        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost)
+        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=None, emotion_boost=emotion_boost, platform=platform)
     end_step("智能音频分析")
 
     print("7/8 优化字幕时间...")
@@ -2677,7 +2924,7 @@ def main() -> None:
         subtitle_end_time = audio_duration + intro_offset_time
         
         # 重新生成字幕文件，这次带有准确的结束时间
-        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=subtitle_end_time, emotion_boost=emotion_boost)
+        write_ass_karaoke(bilingual_items, ass_path, keywords, chapters, show_bars=show_bars_final, intro_offset=intro_offset_time, subtitle_end_time=subtitle_end_time, emotion_boost=emotion_boost, platform=platform)
         print(f"   字幕将在 {subtitle_end_time:.1f}秒 时停止显示，然后播放2秒片尾")
     else:
         print("   跳过片尾时间优化（片尾效果未启用）")
