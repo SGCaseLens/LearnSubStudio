@@ -276,10 +276,102 @@ def fix_english_contractions(text: str) -> str:
     return text
 
 
+def make_font_safe(text: str) -> str:
+    """
+    将文本转换为字体安全格式，替换可能导致显示问题的特殊字符
+    """
+    if not text:
+        return text
+    
+    # 字符替换映射 - 将可能有问题的Unicode字符替换为字体兼容的替代
+    font_safe_replacements = {
+        # 引号类 - 弯引号可能在某些字体中显示不正确
+        '"': '"', '"': '"',  # 左右双引号 → 直双引号
+        ''': "'", ''': "'",  # 左右单引号 → 直单引号
+        
+        # 连字符类 - 特殊连字符可能不被支持
+        '—': ' - ',          # em dash → 空格连字符空格
+        '–': '-',            # en dash → 普通连字符
+        
+        # 省略号
+        '…': '...',          # 省略号 → 三个点
+        
+        # 特殊符号类 - 这些符号可能不在所有字体中
+        '®': '(R)',          # 注册商标 → (R)
+        '©': '(C)',          # 版权符号 → (C)
+        '™': '(TM)',         # 商标符号 → (TM)
+        
+        # 箭头和方向符号
+        '→': '->',           # 右箭头 → ->
+        '←': '<-',           # 左箭头 → <-
+        '↑': '^',            # 上箭头 → ^
+        '↓': 'v',            # 下箭头 → v
+        
+        # 项目符号
+        '•': '*',            # 实心圆点 → 星号
+        '·': '*',            # 中点 → 星号
+        '▪': '*',            # 小方块 → 星号
+        '▫': '*',            # 空心小方块 → 星号
+        
+        # 数学符号
+        '×': 'x',            # 乘号 → x
+        '÷': '/',            # 除号 → /
+        '±': '+/-',          # 正负号 → +/-
+        
+        # 货币符号（保留常见的）
+        '¢': 'c',            # 分 → c
+        '£': 'GBP',          # 英镑 → GBP
+        '¥': 'JPY',          # 日元 → JPY
+        '€': 'EUR',          # 欧元 → EUR
+    }
+    
+    # 应用替换
+    for old_char, new_char in font_safe_replacements.items():
+        if old_char in text:
+            text = text.replace(old_char, new_char)
+    
+    # 移除可能有问题的Emoji和高位Unicode字符
+    # 保留基本拉丁字符、扩展拉丁字符和常见符号
+    safe_chars = []
+    for char in text:
+        cp = ord(char)
+        # 保留ASCII字符 (0x00-0x7F)
+        # 保留拉丁-1补充 (0x80-0xFF)  
+        # 保留拉丁扩展A (0x100-0x17F)
+        # 保留拉丁扩展B (0x180-0x24F)
+        # 保留IPA扩展 (0x250-0x2AF)
+        # 保留间距修饰字符 (0x2B0-0x2FF)
+        # 保留组合变音符号 (0x300-0x36F)
+        # 保留希腊字母和科普特字母 (0x370-0x3FF)
+        # 保留一般标点 (0x2000-0x206F)
+        # 保留货币符号 (0x20A0-0x20CF)
+        # 保留CJK字符（中文、日文、韩文）
+        if (cp <= 0x36F or                          # 基本拉丁扩展
+            (0x2000 <= cp <= 0x206F) or            # 一般标点
+            (0x20A0 <= cp <= 0x20CF) or            # 货币符号
+            (0x3000 <= cp <= 0x9FFF) or            # CJK字符
+            (0xAC00 <= cp <= 0xD7AF) or            # 韩文字符
+            char in ' \n\t'):                      # 空白字符
+            safe_chars.append(char)
+        else:
+            # 对于不支持的字符，尝试找到安全的替代
+            # 如果是控制字符或格式字符，跳过
+            import unicodedata
+            cat = unicodedata.category(char)
+            if not cat.startswith('C') and not cat.startswith('Cf'):
+                # 对于其他字符，可以选择保留或替换为问号
+                # 这里选择跳过以避免显示问题
+                continue
+    
+    return ''.join(safe_chars)
+
+
 def clean_text(text: str) -> str:
     # 先修复英文缩写中的异常空格
     text = fix_english_contractions(text)
-    # 然后进行常规的文本清理
+    # 然后转换为字体安全格式
+    text = make_font_safe(text)
+    # 最后进行常规的文本清理
     return remove_garbled_chars(text)
 
 
