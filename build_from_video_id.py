@@ -1760,6 +1760,107 @@ def build_chapter_markers(items: List[Dict], sections: int = 3) -> List[Tuple[fl
     return markers
 
 
+def get_youtube_chapters(video_id: str) -> List[Tuple[float, float, str]]:
+    """
+    📋 获取YouTube视频的原生章节信息
+    返回章节列表: [(开始时间, 结束时间, 章节标题), ...]
+    """
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    
+    try:
+        print("   🔍 正在获取YouTube视频章节信息...")
+        
+        # 使用yt-dlp获取视频的详细信息，包括章节
+        result = subprocess.run([
+            "yt-dlp", 
+            "--print", "%(chapters)j",  # 获取章节信息的JSON格式
+            "--print", "%(duration)s",   # 获取视频总时长
+            url
+        ], capture_output=True, text=True, check=False)
+        
+        if result.returncode != 0:
+            print("   ⚠️ 无法获取视频信息，跳过章节功能")
+            return []
+        
+        output_lines = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+        
+        if len(output_lines) < 2:
+            print("   ⚠️ 视频信息不完整，跳过章节功能")
+            return []
+            
+        chapters_json = output_lines[0]
+        duration_str = output_lines[1]
+        
+        # 解析视频总时长
+        try:
+            video_duration = float(duration_str)
+        except (ValueError, TypeError):
+            print("   ⚠️ 无法解析视频时长，跳过章节功能")
+            return []
+        
+        # 解析章节信息
+        if chapters_json == "null" or not chapters_json:
+            print("   ℹ️ 该视频没有设置章节标记")
+            return []
+        
+        try:
+            chapters_data = json.loads(chapters_json)
+        except json.JSONDecodeError:
+            print("   ⚠️ 章节信息格式错误，跳过章节功能")
+            return []
+        
+        if not chapters_data or not isinstance(chapters_data, list):
+            print("   ℹ️ 该视频没有有效的章节标记")
+            return []
+        
+        # 转换章节数据为我们需要的格式
+        youtube_chapters = []
+        
+        for i, chapter in enumerate(chapters_data):
+            if not isinstance(chapter, dict):
+                continue
+                
+            # 获取章节开始时间
+            start_time = chapter.get('start_time', 0)
+            title = chapter.get('title', f'Chapter {i + 1}')
+            
+            # 清理章节标题
+            title = clean_text(title)
+            if not title:
+                title = f"Chapter {i + 1}"
+            
+            # 计算结束时间
+            if i < len(chapters_data) - 1:
+                # 不是最后一章，结束时间是下一章的开始时间
+                end_time = chapters_data[i + 1].get('start_time', start_time + 60)
+            else:
+                # 最后一章，结束时间是视频结束
+                end_time = video_duration
+            
+            # 确保时间有效
+            if isinstance(start_time, (int, float)) and isinstance(end_time, (int, float)):
+                if end_time > start_time:
+                    youtube_chapters.append((float(start_time), float(end_time), title))
+        
+        if youtube_chapters:
+            print(f"   ✅ 成功获取到 {len(youtube_chapters)} 个章节标记")
+            for i, (start, end, title) in enumerate(youtube_chapters):
+                mins_start, secs_start = divmod(int(start), 60)
+                mins_end, secs_end = divmod(int(end), 60)
+                print(f"      {i+1}. {title} ({mins_start:02d}:{secs_start:02d} - {mins_end:02d}:{secs_end:02d})")
+            return youtube_chapters
+        else:
+            print("   ℹ️ 没有找到有效的章节标记")
+            return []
+            
+    except subprocess.CalledProcessError as e:
+        print(f"   ⚠️ 获取章节信息失败: {e}")
+        return []
+    except Exception as e:
+        print(f"   ⚠️ 解析章节信息时出错: {e}")
+        return []
+
+
 def create_multi_line_title_drawtext(wrapped_title: str, safe_fontfile: str, base_y: int = None) -> tuple[str, str]:
     """
     为多行标题创建独立的drawtext滤镜
@@ -2627,6 +2728,15 @@ def main() -> None:
                        choices=['xiaohongshu', 'tiktok', 'douyin', 'instagram', 'universal'],
                        default='universal',
                        help='📱 平台定制优化：xiaohongshu(小红书清新风), tiktok(年轻潮流风), douyin(本土大气风), instagram(高端质感风), universal(通用平衡风) (默认: universal)')
+    
+    parser.add_argument('--auto-chapters',
+                       action='store_true', 
+                       default=True,
+                       help='📋 自动获取并显示YouTube视频的原生章节标记 (默认: 启用)')
+    
+    parser.add_argument('--no-chapters',
+                       action='store_true',
+                       help='📋 关闭章节功能，不显示任何章节标记')
 
     # 输出设置
     parser.add_argument('--output', '--out',
@@ -2693,6 +2803,7 @@ def main() -> None:
             show_source = False  # 旧格式不支持显示来源
             emotion_boost = False  # 旧格式不支持情绪增强
             platform = 'universal'  # 旧格式使用通用平台样式
+            auto_chapters = True  # 旧格式默认启用章节功能
             output_path = ''  # 旧格式不支持自定义输出路径
             keep_temp = False  # 旧格式默认清理中间文件
         else:
@@ -2720,6 +2831,7 @@ def main() -> None:
             show_source = args.show_source  # 是否显示视频来源
             emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
             platform = args.platform  # 📱 平台定制优化
+            auto_chapters = not args.no_chapters  # 📋 章节功能控制（默认启用，除非用户关闭）
             output_path = args.output.strip() if args.output else ''
             keep_temp = args.keep_temp
             
@@ -2755,6 +2867,7 @@ def main() -> None:
         show_source = args.show_source  # 是否显示视频来源
         emotion_boost = args.emotion_boost  # 🎨 情绪驱动视觉系统
         platform = args.platform  # 📱 平台定制优化
+        auto_chapters = not args.no_chapters  # 📋 章节功能控制（默认启用，除非用户关闭）
         output_path = args.output.strip() if args.output else ''
         keep_temp = args.keep_temp
         
@@ -2822,7 +2935,24 @@ def main() -> None:
     print("3/8 生成字幕和文本...")
     start_step("生成字幕和文本")
     keywords = extract_keywords(items, top_n=8)
-    chapters = build_chapter_markers(bilingual_items, sections=0)  # 默认关闭章节标记功能
+    
+    # 📋 智能章节系统：优先使用YouTube原生章节，否则跳过章节功能
+    chapters = []
+    if auto_chapters:  # 用户可控制是否启用章节功能
+        print("   🔍 尝试获取YouTube视频原生章节...")
+        youtube_chapters = get_youtube_chapters(video_id)
+        
+        if youtube_chapters:
+            # 找到了YouTube原生章节，使用它们
+            chapters = youtube_chapters
+            print(f"   ✅ 使用YouTube原生章节 ({len(chapters)} 个)")
+        else:
+            # 没有找到YouTube原生章节，不生成任何章节
+            chapters = []
+            print("   ℹ️ 未找到YouTube章节，跳过章节功能")
+    else:
+        print("   ⏭️ 章节功能已被用户关闭")
+        chapters = []
     # 如果启用片头，字幕需要延后显示
     intro_offset_time = 1.5 if show_intro else 0.0  # 片头时长1.5秒
     # 先用None作为subtitle_end_time，在音频下载后重新生成字幕

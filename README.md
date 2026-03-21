@@ -25,7 +25,7 @@
 - 🚀 **性能优化**: 智能检测硬件编解码器，多线程加速，保持质量的同时大幅提升导出速度
 - 🧹 **智能清理**: 先进的乱码和噪音文本清理
 - 📚 **历史记录**: 显示字幕历史，便于上下文理解
-- 🎯 **简洁体验**: 章节标记默认关闭，专注学习内容
+- 📋 **智能章节系统**: 自动获取YouTube视频原生章节并集成到学习视频中，保持原有结构和导航体验
 
 ## 📋 环境要求
 
@@ -327,6 +327,8 @@ python build_from_video_id.py VIDEO_ID_OR_URL [选项]
 - `--show-source`: 在视频底部显示YouTube来源链接（默认关闭）
 - `--emotion-boost`: 🎨 启用情绪驱动视觉系统，智能识别情感并添加动态视觉效果（默认关闭）
 - `--platform, -p`: 📱 平台定制优化，支持xiaohongshu/tiktok/douyin/instagram/universal（默认通用）
+- `--auto-chapters`: 📋 自动获取并显示YouTube视频的原生章节标记（默认开启）
+- `--no-chapters`: 📋 关闭章节功能，不显示任何章节标记
 - `--output, --out`: 指定输出MP4文件路径（默认：当前目录）
 - `--keep-temp`: 保留中间文件 (.mp3, .txt, .ass等)
 - `--clean-temp`: 强制清理中间文件（默认行为）
@@ -478,6 +480,62 @@ python build_from_video_id.py VIDEO_ID \
   --summary "专业课程"
 ```
 
+## 📋 智能章节系统
+
+### ✨ 功能概述
+
+智能章节系统能够自动获取YouTube视频的原生章节信息，并无缝集成到生成的学习视频中。这个功能让您的学习视频保持原视频的完整结构和导航体验，提供更专业的教学视频质感。
+
+### 🎯 核心特性
+
+- **📋 自动获取**: 智能获取YouTube视频的原生章节标记
+- **🔄 智能适配**: 有章节则使用，无章节则保持简洁
+- **⏱️ 时间精确**: 精确计算每个章节的开始和结束时间  
+- **🎛️ 用户控制**: 默认启用，用户可选择关闭
+- **🔧 完美兼容**: 与所有现有功能无缝协作
+
+### 🧠 智能处理逻辑
+
+1. **🔍 自动检测**: 使用yt-dlp获取YouTube视频元数据
+2. **📊 解析验证**: 智能解析JSON格式的章节信息
+3. **⏱️ 时间计算**: 精确计算章节时间范围
+4. **🎨 集成渲染**: 无缝集成到ASS字幕系统
+5. **🔄 容错处理**: 优雅处理无章节或异常情况
+
+### 💡 使用指南
+
+```bash
+# 📋 默认启用章节功能
+python build_from_video_id.py VIDEO_ID
+# 自动检测并集成YouTube章节
+
+# 🎛️ 明确控制章节功能
+python build_from_video_id.py VIDEO_ID --auto-chapters    # 明确启用
+python build_from_video_id.py VIDEO_ID --no-chapters      # 关闭功能
+
+# 🔥 与其他功能组合
+python build_from_video_id.py VIDEO_ID \
+  --platform xiaohongshu \
+  --emotion-boost \
+  --summary "结构化学习内容"
+```
+
+### 📊 支持格式
+
+- ✅ **手动章节**: YouTube创作者设置的章节标记
+- ✅ **自动章节**: YouTube自动生成的章节  
+- ✅ **详细标题**: 完整的章节标题和描述
+- ✅ **任意数量**: 支持1-100+个章节
+- ✅ **灵活时长**: 支持秒级到小时级的章节
+
+### 🎯 适用场景
+
+- 📚 **教程视频**: 保持原有的教学结构
+- 🎓 **课程内容**: 维持完整的课程章节体系
+- 📖 **知识分享**: 让内容更有条理和逻辑
+- 🔬 **技术讲解**: 保持技术内容的结构化呈现
+- 💼 **商务培训**: 专业的培训视频结构
+
 ### 🎯 使用示例
 
 #### 友好的命名参数方式（推荐）
@@ -498,6 +556,10 @@ python build_from_video_id.py QqeECC13HcM --show-intro --summary "学习AI技术
 # 控制音频可视化
 python build_from_video_id.py QqeECC13HcM --show-bars      # 强制显示频谱
 python build_from_video_id.py QqeECC13HcM --no-bars        # 强制关闭频谱
+
+# 控制章节功能
+python build_from_video_id.py QqeECC13HcM                   # 默认启用：自动获取YouTube章节
+python build_from_video_id.py QqeECC13HcM --no-chapters    # 关闭章节功能
 
 # 使用简短别名
 python build_from_video_id.py QqeECC13HcM -q "tech" -c cover.jpg -s "学习视频" -i -l -o
